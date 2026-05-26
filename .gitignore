@@ -1,0 +1,25 @@
+# Python scripts and test files
+*.py
+*.js
+*.md
+adapter.js
+notebook.js
+
+# Extra HTML files
+better_adj_section.html
+better_raw.html
+merged.html
+test.html
+ldoce6-viewer.html
+textbook-standalone.html
+
+# Backup and test dirs
+备份/
+已检验/
+词典预提取/
+ldoce6-test/
+
+# Temp/cache
+__pycache__/
+*.pyc
+.DS_Store
