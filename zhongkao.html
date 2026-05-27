@@ -683,7 +683,46 @@ function speakSyllable(syllable) {
     'kn': 'n',        'wr': 'r',         'wh': 'w',
     // Common clusters
     'ck': 'k',        'ng': 'ng',        'qu': 'kw',
-    'x': 'ks',        'ea': 'e',         // when at end: "sea" → "se"
+    'x': 'ks',        'ea': 'e',         // when at end: "sea" -> "se"
+    // Short-vowel syllable fixes: TTS pronounces isolated short vowels as long
+    'ov': 'uhv',      // oven -> "uhv" not "ohv"
+    'uv': 'uhv',      // cover, love
+    'ev': 'ehv',      // ever, seven
+    'iv': 'ihv',      // give, live
+    'av': 'av',       // have, travel
+    'od': 'ahd',      // body, modern
+    'ot': 'aht',      // bottle, cotton
+    'op': 'ahp',      // open, top
+    'ob': 'ahb',      // robot, hobby
+    'og': 'ahg',      // dog, foggy
+    'ol': 'uhl',      // dollar, follow
+    'om': 'uhm',      // common, promise
+    'on': 'ahn',      // onion, son
+    'un': 'uhn',      // under, run
+    'ut': 'uht',      // butter, cut
+    'up': 'uhp',      // upper, cup
+    'ub': 'uhb',      // public, club
+    'ug': 'uhg',      // sugar, bug
+    'ud': 'uhd',      // study, bud
+    'us': 'uhs',      // bus, discuss
+    'um': 'uhm',      // summer, mum
+    'an': 'an',       // and, can (already fine)
+    'at': 'at',       // cat, hat
+    'ap': 'ap',       // map, happy
+    'ad': 'ad',       // dad, address
+    'ag': 'ag',       // bag, dragon
+    'et': 'eht',      // let, better
+    'en': 'ehn',      // ten, when
+    'ed': 'ehd',      // bed, red
+    'eg': 'ehg',      // egg, leg
+    'ell': 'ehl',     // tell, yellow
+    'est': 'ehst',    // best, rest
+    'ent': 'ehnt',    // sent, rent
+    'it': 'iht',      // sit, city
+    'in': 'ihn',      // pin, dinner
+    'ick': 'ihk',     // pick, chicken
+    'ill': 'ihl',     // will, fill
+    'ing': 'ihng',    // king, ring (override 'ng' mapping)
   };
   
   var speakText = s;
