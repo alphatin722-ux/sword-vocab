@@ -1,65 +1,123 @@
-import Image from "next/image";
+'use client';
+
+import { useState, useCallback } from 'react';
+import ParentAuditPanel from '@/components/ParentAuditPanel';
+
+const BOOK_TYPES = [
+  { id: 'ket', label: 'KET' },
+  { id: 'greenbook', label: '绿皮书' },
+  { id: 'school', label: '校内英语' },
+];
 
 export default function Home() {
+  const [bookType, setBookType] = useState(null);
+  const [currentWord, setCurrentWord] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState(null);
+
+  const fetchNextWord = useCallback(async (bt) => {
+    setLoading(true);
+    setMessage(null);
+    try {
+      const res = await fetch(`/api/get-next-word?bookType=${bt}`);
+      const data = await res.json();
+      if (data.message) {
+        setMessage(data.message);
+        setCurrentWord(null);
+      } else {
+        setCurrentWord(data);
+      }
+    } catch (err) {
+      setMessage('请求失败: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const handleSelectBook = (bt) => {
+    setBookType(bt);
+    fetchNextWord(bt);
+  };
+
+  const handleNextWord = useCallback(() => {
+    if (bookType) fetchNextWord(bookType);
+  }, [bookType, fetchNextWord]);
+
+  // Book selection screen
+  if (!bookType) {
+    return (
+      <div className="min-h-screen bg-[#ECEFF4] flex flex-col items-center justify-center p-8">
+        <h1 className="text-3xl font-bold text-[#2E3440] mb-8">📚 Sword-Vocab 复习系统</h1>
+        <div className="flex flex-col gap-4 w-full max-w-sm">
+          {BOOK_TYPES.map((bt) => (
+            <button
+              key={bt.id}
+              onClick={() => handleSelectBook(bt.id)}
+              className="w-full py-4 px-6 bg-white rounded-xl border border-[#D8DEE9] text-lg font-bold text-[#5E81AC] hover:bg-[#E5E9F0] transition-colors shadow-sm"
+            >
+              {bt.label}
+            </button>
+          ))}
+        </div>
+        <button
+          onClick={() => fetchNextWord('ket')}
+          className="mt-8 px-6 py-3 bg-[#5E81AC] text-white rounded-xl font-bold"
+        >
+          ➕ 添加初始错题 (KET)
+        </button>
+      </div>
+    );
+  }
+
+  // Loading / All mastered
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#ECEFF4] flex items-center justify-center">
+        <p className="text-xl text-[#4C566A]">加载中...</p>
+      </div>
+    );
+  }
+
+  if (message) {
+    return (
+      <div className="min-h-screen bg-[#ECEFF4] flex flex-col items-center justify-center p-8">
+        <p className="text-xl text-[#4C566A] mb-4">{message}</p>
+        <div className="flex gap-4">
+          <button
+            onClick={() => setBookType(null)}
+            className="px-6 py-3 bg-[#5E81AC] text-white rounded-xl font-bold"
+          >
+            🔙 选择课本
+          </button>
+          <button
+            onClick={() => fetchNextWord(bookType)}
+            className="px-6 py-3 bg-[#A3BE8C] text-white rounded-xl font-bold"
+          >
+            🔄 刷新
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Review panel
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <div>
+      <div className="absolute top-4 left-4 z-10">
+        <button
+          onClick={() => setBookType(null)}
+          className="px-4 py-2 bg-white rounded-lg border border-[#D8DEE9] text-sm font-bold text-[#4C566A] hover:bg-[#E5E9F0]"
+        >
+          🔙 换课本
+        </button>
+      </div>
+      {currentWord && (
+        <ParentAuditPanel
+          currentWord={currentWord}
+          bookType={bookType}
+          onNextWord={handleNextWord}
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.js file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+      )}
     </div>
   );
 }
