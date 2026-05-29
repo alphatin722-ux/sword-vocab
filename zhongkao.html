@@ -75,10 +75,8 @@
         @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 50% { transform: translateX(6px); } 75% { transform: translateX(-6px); } }
         .shake { animation: shake 0.3s; }
         
-        .subject-tabs { display: flex; gap: 8px; border-bottom: 1px solid #E8ECF0; padding-bottom: 12px; margin-bottom: 20px; }
-        .subj-tab { flex: 1; padding: 10px; border: none; background: #FAFAFA; border-radius: 10px; font-weight: bold; color: #5F6368; cursor: pointer; font-size: 14px; transition: 0.2s; }
-        .subj-tab.active { background: #E8F0FE; color: #1A73E8; }
         .error-item { display: flex; justify-content: space-between; align-items: center; padding: 14px; background: #FAFAFA; border: 1px solid #E8ECF0; border-radius: 10px; margin-bottom: 8px; }
+        .err-subj-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.1) !important; }
 
         /* ================================================== */
         /* 🧊 NORDIC FROST THEME & FOCUS UI OVERRIDES */
@@ -287,15 +285,23 @@
         </div>
 
         <div id="error-area" class="card-area">
-            <h2 style="margin-bottom: 20px; color:#1A2530;">📓 错题本</h2>
-            <div class="subject-tabs">
-                <button class="subj-tab active" id="err-tab-eng" onclick="showSubjectErrors('eng')">英语</button>
-                <button class="subj-tab" id="err-tab-math" onclick="showSubjectErrors('math')">数学</button>
-                <button class="subj-tab" id="err-tab-chi" onclick="showSubjectErrors('chi')">语文</button>
+            <div id="error-subject-select" style="text-align:center; padding:40px 0;">
+                <h2 style="margin-bottom: 32px; color:#1A2530;">📓 错题本</h2>
+                <div style="display:flex; flex-direction:column; gap:16px; max-width:360px; margin:0 auto;">
+                    <button class="err-subj-btn" onclick="selectErrorSubject('math')" style="width:100%; padding:20px; border:none; border-radius:14px; font-size:20px; font-weight:bold; cursor:pointer; transition:0.2s; background:#EEF2FF; color:#4F46E5; box-shadow:0 2px 8px rgba(79,70,229,0.1);">🧮 数学</button>
+                    <button class="err-subj-btn" onclick="selectErrorSubject('eng')" style="width:100%; padding:20px; border:none; border-radius:14px; font-size:20px; font-weight:bold; cursor:pointer; transition:0.2s; background:#EFF6FF; color:#2563EB; box-shadow:0 2px 8px rgba(37,99,235,0.1);">📖 英语</button>
+                    <button class="err-subj-btn" onclick="selectErrorSubject('chi')" style="width:100%; padding:20px; border:none; border-radius:14px; font-size:20px; font-weight:bold; cursor:pointer; transition:0.2s; background:#FFF7ED; color:#EA580C; box-shadow:0 2px 8px rgba(234,88,12,0.1);">📝 语文</button>
+                </div>
             </div>
-            <div id="error-list"></div>
-            <div style="text-align: center; margin-top: 24px;">
-                <button onclick="clearSubjectErrors()" style="padding: 10px 20px; background: #FFF; border: 1px solid #D93025; color: #D93025; border-radius: 10px; font-weight: bold; cursor: pointer;">🗑️ 清空当前学科</button>
+            <div id="error-subject-list" style="display:none;">
+                <div class="card-header">
+                    <div class="back-btn" onclick="showErrorSubjects()">🔙 返回</div>
+                    <h2 id="error-subj-title" style="font-size:18px; color:#1A2530;">📓 错题本</h2>
+                </div>
+                <div id="error-list"></div>
+                <div style="text-align: center; margin-top: 24px;">
+                    <button onclick="clearSubjectErrors()" style="padding: 10px 20px; background: #FFF; border: 1px solid #D93025; color: #D93025; border-radius: 10px; font-weight: bold; cursor: pointer;">🗑️ 清空当前学科</button>
+                </div>
             </div>
         </div>
 
@@ -318,6 +324,8 @@ var currentTb = 0;
 var words = [], idx = 0, score = 0, answered = false;
 var activeMode = 'dictation'; 
 var currentQuizEntry = null;
+var currentErrorSubject = null;
+var reciteAudioTimer = null;
 
 function playErrorBeep() {
     try {
@@ -406,8 +414,17 @@ function flipCard(toBack) {
 }
 
 function forceNext() {
+    stopReciteAudioLoop();
     idx++;
     showWord();
+}
+
+function startReciteAudioLoop(word) {
+    if (reciteAudioTimer) clearInterval(reciteAudioTimer);
+    reciteAudioTimer = setInterval(function() { speakWord(word); }, 3000);
+}
+function stopReciteAudioLoop() {
+    if (reciteAudioTimer) { clearInterval(reciteAudioTimer); reciteAudioTimer = null; }
 }
 
 function renderCard(e) {
@@ -436,24 +453,21 @@ function renderCard(e) {
     blocksHtml += '</div>';
 
     if (activeMode === 'recite') {
-        reciteCorrectCount = 0;
         body.innerHTML = `
             <div id="recite-front">
                 <div class="word-en">${displayWord}</div>
                 ${phonetic ? `<div class="word-phon">${phonetic}</div>` : ''}
-                <div class="word-cn">${cn}</div>
+                <div class="word-cn" style="margin-bottom: 20px;">${cn}</div>
+                ${blocksHtml}
             </div>
             <div id="btn-relearn" style="display:none; text-align:center; margin-bottom: 24px;">
                 <button onclick="flipCard(false)" style="background:#F0F4FF; color:#1A73E8; border:none; padding:10px 20px; border-radius:10px; font-weight:bold; font-size:16px; cursor:pointer;">👀 忘了？再学习一遍</button>
             </div>
-            ${blocksHtml}
-            <div id="recite-count" style="text-align:center; font-size:14px; color:#5F6368; margin-bottom:8px;">还需输入 3 次</div>
             <div class="input-row">
-                <input type="text" id="qw-input" class="dict-input" placeholder="点击输入框开始默写..." autocomplete="off" onfocus="flipCard(true)" onkeypress="if(event.key === 'Enter') checkReciteAnswer()">
-                <button class="btn-action" style="width: 120px;" onclick="checkReciteAnswer()">确定</button>
+                <input type="text" id="qw-input" class="dict-input" placeholder="光标点击此处屏蔽英文，输入1次即可过关..." autocomplete="off" onfocus="speakWord('${wordEn}');flipCard(true);startReciteAudioLoop('${wordEn}')" onblur="stopReciteAudioLoop()" onkeydown="stopReciteAudioLoop()" onkeypress="if(event.key === 'Enter') checkReciteAnswer()">
+                <button class="btn-action" style="width: 120px;" onclick="checkReciteAnswer()">确认</button>
             </div>
         `;
-        speakWord(wordEn); 
     } else {
         var blankedEx = exEn;
         if (exEn) {
@@ -465,7 +479,7 @@ function renderCard(e) {
             <div class="word-cn" style="font-size: 36px;">${cn}</div>
             ${blocksHtml}
             <div class="input-row">
-                <input type="text" id="qw-input" class="dict-input" placeholder="拼写英文单词..." autocomplete="off" onkeypress="if(event.key === 'Enter') checkDictAnswer()">
+                <input type="text" id="qw-input" class="dict-input" placeholder="拼写英文单词..." autocomplete="off" onfocus="speakWord('${wordEn}');startReciteAudioLoop('${wordEn}')" onblur="stopReciteAudioLoop()" onkeydown="stopReciteAudioLoop()" onkeypress="if(event.key === 'Enter') checkDictAnswer()">
                 <button class="btn-action" style="width: 140px;" onclick="checkDictAnswer()">确认提交</button>
             </div>
             <div id="qw-feedback" style="text-align:center; min-height:24px; font-size:16px; font-weight:bold;"></div>
@@ -474,46 +488,25 @@ function renderCard(e) {
     if(activeMode !== 'recite') setTimeout(() => { const inp = document.getElementById('qw-input'); if(inp) inp.focus(); }, 50);
 }
 
-var reciteCorrectCount = 0;
-
 function checkReciteAnswer() {
+    stopReciteAudioLoop();
     var inp = document.getElementById('qw-input');
     if(!inp || inp.value.trim() === '') return;
     var userAns = inp.value.trim().toLowerCase();
     var target = currentQuizEntry.en.toLowerCase();
     
     if (userAns === target) {
-        score++;
-        reciteCorrectCount++;
+        score++; // 答对计分
         speakWord(target);
-        inp.value = '';
         inp.style.borderColor = '#34A853';
-        var countEl = document.getElementById('recite-count');
-        if (countEl) {
-            var remain = 3 - reciteCorrectCount;
-            if (remain > 0) {
-                countEl.innerHTML = `✅ 已正确 ${reciteCorrectCount}/3 次，还需输入 ${remain} 次`;
-                countEl.style.color = '#34A853';
-                setTimeout(() => { inp.style.borderColor = '#E3E8EE'; }, 300);
-            } else {
-                countEl.innerHTML = '🎉 已完成！';
-                countEl.style.color = '#34A853';
-                inp.disabled = true;
-                setTimeout(() => { forceNext(); }, 500);
-            }
-        }
+        inp.disabled = true;
+        setTimeout(() => { forceNext(); }, 400); // 1次即过
     } else {
-        reciteCorrectCount = 0;
         inp.style.borderColor = '#EA4335';
         playErrorBeep();
         inp.classList.add('shake');
         saveError(currentQuizEntry.cn, currentQuizEntry.en);
-        var countEl = document.getElementById('recite-count');
-        if (countEl) {
-            countEl.innerHTML = '❌ 已重置，还需输入 3 次';
-            countEl.style.color = '#EA4335';
-        }
-        setTimeout(() => { inp.classList.remove('shake'); inp.style.borderColor = '#E3E8EE'; }, 400);
+        setTimeout(() => { inp.classList.remove('shake'); inp.style.borderColor = '#E3E8EE'; inp.value = ''; }, 400);
     }
 }
 
@@ -554,15 +547,41 @@ function showRandomQuote() { var q = QUOTES[Math.floor(Math.random() * QUOTES.le
 function getErrors() { try { return JSON.parse(localStorage.getItem('zk_errors') || '{}'); } catch(e){return {};} }
 function saveError(cn, en) { var err = getErrors(); var k = en.toLowerCase(); if(!err[k]) err[k] = {cn: cn, en: en, subj: 'eng', count: 0}; err[k].count++; localStorage.setItem('zk_errors', JSON.stringify(err)); updateErrorBadge(); }
 function updateErrorBadge() { document.getElementById('badge-total').textContent = Object.keys(getErrors()).length; }
-function showErrors() { document.querySelectorAll('.card-area').forEach(el => el.style.display = 'none'); document.getElementById('error-area').style.display = 'block'; showSubjectErrors('eng'); }
+function showErrors() {
+    document.querySelectorAll('.card-area').forEach(el => el.style.display = 'none');
+    document.getElementById('error-area').style.display = 'block';
+    document.getElementById('error-subject-select').style.display = 'block';
+    document.getElementById('error-subject-list').style.display = 'none';
+    currentErrorSubject = null;
+}
+function selectErrorSubject(subj) {
+    currentErrorSubject = subj;
+    document.getElementById('error-subject-select').style.display = 'none';
+    document.getElementById('error-subject-list').style.display = 'block';
+    var titleMap = {math:'数学', eng:'英语', chi:'语文'};
+    document.getElementById('error-subj-title').textContent = '📓 错题本 - ' + (titleMap[subj] || subj);
+    showSubjectErrors(subj);
+}
+function showErrorSubjects() {
+    currentErrorSubject = null;
+    document.getElementById('error-subject-select').style.display = 'block';
+    document.getElementById('error-subject-list').style.display = 'none';
+}
 function showSubjectErrors(subj) {
-    document.querySelectorAll('.subj-tab').forEach(b => b.classList.remove('active')); document.getElementById('err-tab-' + subj).classList.add('active');
     var err = getErrors(), html = '';
-    for(var k in err) { if((err[k].subj || 'eng') === subj) html += `<div class="error-item"><span style="font-size:16px; color:#1A2530; font-weight:500;">${err[k].cn} — <strong style="color:#0A56D0;">${err[k].en}</strong> (错 ${err[k].count} 次)</span><span class="error-del" onclick="delError('${k}', '${subj}')">❌</span></div>`; }
+    for(var k in err) { if((err[k].subj || 'eng') === subj) html += '<div class="error-item"><span style="font-size:16px; color:#1A2530; font-weight:500;">' + err[k].cn + ' — <strong style="color:#0A56D0;">' + err[k].en + '</strong> (错 ' + err[k].count + ' 次)</span><span class="error-del" onclick="delError(\'' + k + '\')">❌</span></div>'; }
     document.getElementById('error-list').innerHTML = html || '<div style="text-align:center; padding: 30px; color:#9AA0A6;">当前学科暂无错题 🎉</div>';
 }
-function delError(k, subj) { var err = getErrors(); delete err[k]; localStorage.setItem('zk_errors', JSON.stringify(err)); updateErrorBadge(); showSubjectErrors(subj); }
-function clearSubjectErrors() { var activeSubj = document.querySelector('.subj-tab.active').id.replace('err-tab-', ''); var err = getErrors(); for(var k in err) { if((err[k].subj || 'eng') === activeSubj) delete err[k]; } localStorage.setItem('zk_errors', JSON.stringify(err)); updateErrorBadge(); showSubjectErrors(activeSubj); }
+function delError(k) {
+    var err = getErrors(); delete err[k]; localStorage.setItem('zk_errors', JSON.stringify(err));
+    updateErrorBadge(); showSubjectErrors(currentErrorSubject);
+}
+function clearSubjectErrors() {
+    var err = getErrors(); var subj = currentErrorSubject;
+    for(var k in err) { if((err[k].subj || 'eng') === subj) delete err[k]; }
+    localStorage.setItem('zk_errors', JSON.stringify(err)); updateErrorBadge();
+    showSubjectErrors(subj);
+}
 
 function speakWord(text) { var u = new SpeechSynthesisUtterance(text); u.lang = 'en-US'; u.rate = 0.85; speechSynthesis.cancel(); speechSynthesis.speak(u); }
 window.onload = function() { initTextbooks(); showRandomQuote(); updateErrorBadge(); };
