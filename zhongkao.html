@@ -353,12 +353,16 @@ function initTextbooks() {
 
 function populateUnits() {
     var tb = TEXTBOOKS[currentTb];
+    var completed = getCompletedUnits();
     var sel = document.getElementById('unit-select');
     sel.innerHTML = '<option value="">选择单元</option>';
     tb.units.forEach((u, i) => {
         let name = u.name;
         let display = name.length > 15 ? name.substring(0, 15) + '...' : name;
-        sel.innerHTML += `<option value="${i}" title="${name}">${display}</option>`;
+        let isDone = completed[currentTb + '-' + i];
+        let prefix = isDone ? '✅ ' : '';
+        let style = isDone ? ' style="color:#34A853;font-weight:bold;"' : '';
+        sel.innerHTML += `<option value="${i}" title="${name}"${style}>${prefix}${display}</option>`;
     });
     document.getElementById('start-btn').style.display = 'none';
     sel.onchange = function() { document.getElementById('start-btn').style.display = this.value !== '' ? 'block' : 'none'; };
@@ -538,6 +542,11 @@ function finishQuiz() {
     document.getElementById('quiz-area').style.display = 'none'; document.getElementById('result-area').style.display = 'block';
     document.getElementById('result-score').textContent = `得分: ${score} / ${words.length}`;
     document.getElementById('result-emoji').textContent = (score / words.length) >= 0.9 ? '🏆' : '🔥';
+    if ((score / words.length) >= 0.9) {
+        var unitIdx = document.getElementById('unit-select').value;
+        markUnitComplete(currentTb, parseInt(unitIdx));
+        populateUnits();
+    }
 }
 function retryQuiz() { words = words.sort(() => Math.random() - 0.5); idx = 0; score = 0; document.getElementById('result-area').style.display = 'none'; document.getElementById('quiz-area').style.display = 'block'; showWord(); }
 
@@ -547,6 +556,12 @@ function showRandomQuote() { var q = QUOTES[Math.floor(Math.random() * QUOTES.le
 function getErrors() { try { return JSON.parse(localStorage.getItem('zk_errors') || '{}'); } catch(e){return {};} }
 function saveError(cn, en) { var err = getErrors(); var k = en.toLowerCase(); if(!err[k]) err[k] = {cn: cn, en: en, subj: 'eng', count: 0}; err[k].count++; localStorage.setItem('zk_errors', JSON.stringify(err)); updateErrorBadge(); }
 function updateErrorBadge() { document.getElementById('badge-total').textContent = Object.keys(getErrors()).length; }
+function getCompletedUnits() { try { return JSON.parse(localStorage.getItem('zk_completed') || '{}'); } catch(e){return {};} }
+function markUnitComplete(tbIdx, unitIdx) {
+    var c = getCompletedUnits();
+    c[tbIdx + '-' + unitIdx] = true;
+    localStorage.setItem('zk_completed', JSON.stringify(c));
+}
 function showErrors() {
     document.querySelectorAll('.card-area').forEach(el => el.style.display = 'none');
     document.getElementById('error-area').style.display = 'block';
