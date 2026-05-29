@@ -140,6 +140,113 @@
         .card-area, #sidebar-box { border-radius: 16px !important; }
         .ext-box, .info-box { border-radius: 12px !important; }
         .btn-action, .btn-start, .mode-btn, select, .dict-input { border-radius: 10px !important; }
+
+        /* ================================================== */
+        /* 🚀 全屏通栏布局重构 (Split-Pane Architecture) */
+       ...[truncated]
+
+        /* ================================================== */
+        /* 🧊 终极淡冷蓝通栏主题 (Clear Cool Blue Split-Pane) */
+     ...[truncated]
+        /* ================================================== */
+        /* 🧊 终极淡冷蓝通栏主题 (Clear Cool Blue Split-Pane) */
+        /* ================================================== */
+
+        /* 1. 强制全屏双栏布局，消除外部留白 */
+        body { 
+            margin: 0 !important; 
+            padding: 0 !important; 
+            height: 100vh !important; 
+            overflow: hidden !important; 
+            background-color: #F8FAFD !important; /* 右侧主区域：极浅的透气蓝白 */
+        }
+        #app { 
+            display: flex !important; 
+            max-width: 100% !important; 
+            margin: 0 !important; 
+            padding: 0 !important; 
+            height: 100vh !important; 
+            gap: 0 !important; 
+        }
+
+        /* 2. 左侧边栏：核心的"淡冷蓝"实体色块 */
+        .left-col { 
+            width: 280px !important; 
+            min-width: 280px !important; 
+            height: 100vh !important; 
+            background-color: #EBF3FA !important; /* 🌟 纯正清爽的淡冷蓝 */
+            border-right: 1px solid #D6E4F0 !important; /* 柔和的冷蓝色分割线 */
+            padding: 32px 24px !important; 
+            position: static !important; 
+            margin: 0 !important;
+            box-sizing: border-box !important;
+            overflow-y: auto !important;
+        }
+
+        /* 3. 彻底剥离左侧菜单的白色外壳，融入冷蓝底色 */
+        #sidebar-box { 
+            background: transparent !important; 
+            box-shadow: none !important; 
+            border: none !important; 
+            padding: 0 !important; 
+            opacity: 1.0 !important; 
+        }
+        #sidebar-box:hover { opacity: 1.0 !important; }
+
+        /* 4. 右侧主工作区：纯净通透 */
+        #right-content { 
+            flex: 1 !important; 
+            height: 100vh !important; 
+            overflow-y: auto !important; 
+            background-color: #F8FAFD !important; 
+            padding: 60px 40px !important; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* 5. 卡片与文字色彩层级 */
+        .card-area { 
+            background: #FFFFFF !important; 
+            border: 1px solid #E2E8F0 !important; 
+            box-shadow: 0 12px 32px rgba(59, 130, 246, 0.06) !important; /* 淡淡的冷蓝色阴影 */
+            margin-top: 0 !important;
+        }
+        .word-en { color: #1E293B !important; } /* 深冷石板灰，比纯黑更透气 */
+        .word-cn { color: #334155 !important; }
+        .ex-en { color: #1E293B !important; }
+        .ex-cn, .phon-word, .ext-title { color: #64748B !important; }
+
+        /* 6. 核心交互按钮 (清脆亮冷蓝) */
+        .btn-action, .btn-start, .mode-btn.active { 
+            background-color: #3B82F6 !important; /* 极其清脆的亮蓝色 */
+            color: #FFFFFF !important; 
+            border: none !important; 
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25) !important;
+        }
+        .btn-action:hover, .btn-start:hover { 
+            background-color: #2563EB !important; 
+            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3) !important;
+        }
+        .mode-btn { border-color: transparent !important; color: #64748B !important; background: transparent !important; }
+        .mode-btn:hover { color: #3B82F6 !important; background: rgba(59, 130, 246, 0.05) !important; }
+
+        /* 7. 下拉框与输入框适配冷蓝底色 */
+        .select-row select { 
+            background: rgba(255, 255, 255, 0.7) !important; 
+            border: 1px solid #D6E4F0 !important; 
+            color: #1E293B !important;
+        }
+        .select-row select:focus { border-color: #3B82F6 !important; background: #FFFFFF !important; }
+
+        .dict-input { border-color: #E2E8F0 !important; color: #1E293B !important; background: #F8FAFD !important; }
+        .dict-input:focus { 
+            border-color: #3B82F6 !important; 
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15) !important; 
+            background: #FFFFFF !important;
+        }
+        .info-box { border-left-color: #3B82F6 !important; background: #F1F5F9 !important; }
+        #review-section { background: transparent !important; border: none !important; padding: 0 !important; margin-top: 16px !important; }
     </style>
 </head>
 <body>
@@ -329,19 +436,21 @@ function renderCard(e) {
     blocksHtml += '</div>';
 
     if (activeMode === 'recite') {
+        reciteCorrectCount = 0;
         body.innerHTML = `
             <div id="recite-front">
                 <div class="word-en">${displayWord}</div>
                 ${phonetic ? `<div class="word-phon">${phonetic}</div>` : ''}
-                ${blocksHtml}
+                <div class="word-cn">${cn}</div>
             </div>
             <div id="btn-relearn" style="display:none; text-align:center; margin-bottom: 24px;">
                 <button onclick="flipCard(false)" style="background:#F0F4FF; color:#1A73E8; border:none; padding:10px 20px; border-radius:10px; font-weight:bold; font-size:16px; cursor:pointer;">👀 忘了？再学习一遍</button>
             </div>
-            <div class="word-cn">${cn}</div>
+            ${blocksHtml}
+            <div id="recite-count" style="text-align:center; font-size:14px; color:#5F6368; margin-bottom:8px;">还需输入 3 次</div>
             <div class="input-row">
-                <input type="text" id="qw-input" class="dict-input" placeholder="光标点击此处屏蔽英文，输入1次即可过关..." autocomplete="off" onfocus="flipCard(true)" onkeypress="if(event.key === 'Enter') checkReciteAnswer()">
-                <button class="btn-action" style="width: 120px;" onclick="forceNext()">下一个</button>
+                <input type="text" id="qw-input" class="dict-input" placeholder="点击输入框开始默写..." autocomplete="off" onfocus="flipCard(true)" onkeypress="if(event.key === 'Enter') checkReciteAnswer()">
+                <button class="btn-action" style="width: 120px;" onclick="checkReciteAnswer()">确定</button>
             </div>
         `;
         speakWord(wordEn); 
@@ -365,6 +474,8 @@ function renderCard(e) {
     if(activeMode !== 'recite') setTimeout(() => { const inp = document.getElementById('qw-input'); if(inp) inp.focus(); }, 50);
 }
 
+var reciteCorrectCount = 0;
+
 function checkReciteAnswer() {
     var inp = document.getElementById('qw-input');
     if(!inp || inp.value.trim() === '') return;
@@ -372,17 +483,37 @@ function checkReciteAnswer() {
     var target = currentQuizEntry.en.toLowerCase();
     
     if (userAns === target) {
-        score++; // 答对计分
+        score++;
+        reciteCorrectCount++;
         speakWord(target);
+        inp.value = '';
         inp.style.borderColor = '#34A853';
-        inp.disabled = true;
-        setTimeout(() => { forceNext(); }, 400); // 1次即过
+        var countEl = document.getElementById('recite-count');
+        if (countEl) {
+            var remain = 3 - reciteCorrectCount;
+            if (remain > 0) {
+                countEl.innerHTML = `✅ 已正确 ${reciteCorrectCount}/3 次，还需输入 ${remain} 次`;
+                countEl.style.color = '#34A853';
+                setTimeout(() => { inp.style.borderColor = '#E3E8EE'; }, 300);
+            } else {
+                countEl.innerHTML = '🎉 已完成！';
+                countEl.style.color = '#34A853';
+                inp.disabled = true;
+                setTimeout(() => { forceNext(); }, 500);
+            }
+        }
     } else {
+        reciteCorrectCount = 0;
         inp.style.borderColor = '#EA4335';
         playErrorBeep();
         inp.classList.add('shake');
         saveError(currentQuizEntry.cn, currentQuizEntry.en);
-        setTimeout(() => { inp.classList.remove('shake'); inp.style.borderColor = '#E3E8EE'; inp.value = ''; }, 400);
+        var countEl = document.getElementById('recite-count');
+        if (countEl) {
+            countEl.innerHTML = '❌ 已重置，还需输入 3 次';
+            countEl.style.color = '#EA4335';
+        }
+        setTimeout(() => { inp.classList.remove('shake'); inp.style.borderColor = '#E3E8EE'; }, 400);
     }
 }
 
