@@ -1011,7 +1011,7 @@ function checkDictAnswer() {
         fb.innerHTML = '<span style="color:#34A853;">✅ 正确！' + (hinted ? '（提示后答对，不升盒）' : '（Box' + (currentQuizEntry._box || '?') + '→升盒）') + '</span>';
         speakWord(target);
         answered = true;
-        _enterCascadeReviewIfNeeded(inp);
+        setTimeout(() => { idx++; showWord(); }, 800);
     } else {
         // 3击缓冲
         if (!currentQuizEntry._strikes) currentQuizEntry._strikes = 0;
@@ -1045,7 +1045,7 @@ function checkDictAnswer() {
             answered = true;
             inp.disabled = true;
             inp.style.color = '#D93025';
-            _enterCascadeReviewIfNeeded(inp);
+            setTimeout(() => { idx++; showWord(); }, 1500);
         }
     }
     updateReviewStrikes();
