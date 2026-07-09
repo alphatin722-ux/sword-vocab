@@ -723,6 +723,7 @@ function startQuiz() {
 
 function showWord() {
     if (idx >= words.length) { 
+        if (delayMode) { finishDelayReview(); return; }
         var unitIdx = parseInt(document.getElementById('unit-select').value);
         if (!isNaN(unitIdx)) {
             var unit = TEXTBOOKS[currentTb].units[unitIdx];
@@ -975,26 +976,28 @@ function checkDictAnswer() {
     var target = currentQuizEntry.en.toLowerCase();
     var fb = document.getElementById('qw-feedback');
     
-    // === 延迟反馈模式（每日复习）===
+    // === 每日复习（逐题反馈 + 级联卡片）===
     if (delayMode) {
         var correct = (userAns === target);
         reviewLog.push({
             word: target, cn: currentQuizEntry.cn, correct: correct,
             userAns: userAns, box: currentQuizEntry._box
         });
-        if (correct) score++;
+        if (correct) {
+            score++;
+            upgradeBox(target);
+            inp.style.borderColor = '#34A853'; inp.style.color = '#34A853';
+            fb.innerHTML = '<span style="color:#34A853;">✅ 正确！</span>';
+        } else {
+            saveError(currentQuizEntry.cn, currentQuizEntry.en);
+            downgradeBox(target);
+            inp.style.borderColor = '#EA4335';
+            fb.innerHTML = '<span style="color:#EA4335;">❌ 正确答案：<b>' + target + '</b></span>';
+        }
+        speakWord(target);
         answered = true;
         inp.disabled = true;
-        idx++;
-        
-        // 每 N 题或全部答完 → 显示结果
-        var batchEnd = (reviewLog.length % delayBatchSize === 0);
-        var allDone = (idx >= words.length);
-        if (batchEnd || allDone) {
-            setTimeout(function() { showDelayResults(allDone); }, 300);
-        } else {
-            setTimeout(function() { showWord(); }, 200);
-        }
+        _enterCascadeReviewIfNeeded(inp);
         return;
     }
     
