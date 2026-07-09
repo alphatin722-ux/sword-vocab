@@ -52,7 +52,7 @@
         .word-cn { font-size: 32px; font-weight: 600; color: #1A2530; text-align: center; margin-bottom: 24px; line-height: 1.4; }
         
         .insight-deck { display: flex; flex-direction: row; gap: 6px; margin-bottom: 24px; min-height: 80px; align-items: stretch; overflow: hidden; }
-        .insight-card { border-radius: 8px; overflow: hidden; flex-shrink: 0; cursor: default; transition: all 0.45s cubic-bezier(0.4, 0, 0.2, 1); }
+        .insight-card { border-radius: 8px; overflow: hidden; flex-shrink: 0; cursor: pointer; transition: all 0.45s cubic-bezier(0.4, 0, 0.2, 1); }
         .insight-card.active { flex: 1; min-width: 0; display: flex; flex-direction: row; padding: 0; }
         .insight-card.seen { width: 10px; padding: 0; }
         .insight-card.pending { width: 10px; padding: 0; }
@@ -436,6 +436,7 @@ var currentQuizEntry = null;
 var cascadeIndex = 0;
 var totalCascadeCards = 0;
 var cascadeDone = false;
+var _dictCascadeReview = false; // 默写模式下答完后逐张查看卡片
 var reciteAudioTimer = null;
 var reciteStreak = 0; 
 
@@ -731,6 +732,7 @@ function showWord() {
     }
     currentQuizEntry = words[idx];
     answered = false; reciteStreak = 0;
+    _dictCascadeReview = false;
     renderCard(currentQuizEntry);
 }
 
@@ -779,7 +781,7 @@ function renderCard(e) {
     totalCascadeCards = cascadeCards.length; cascadeIndex = 0; cascadeDone = false;
     var blocksHtml = '<div class="insight-deck" id="insight-deck">';
     for (var ci = 0; ci < cascadeCards.length; ci++) {
-        var c = cascadeCards[ci]; var state = ci === 0 ? 'active' : 'pending';
+        var c = cascadeCards[ci]; var state = (activeMode === 'recite' && ci === 0) ? 'active' : 'pending';
         blocksHtml += '<div class="insight-card ' + c.cls + ' ' + state + '" data-idx="' + ci + '"><div class="ic-title">' + c.title + '</div><div class="ic-body">' + c.body + '</div></div>';
     }
     blocksHtml += '</div>';
@@ -947,8 +949,27 @@ var reviewLog = [];      // {word, correct, userAns, box, en, cn}
 var delayBatchSize = 10;
 
 function checkDictAnswer() {
-    if(answered) return;
     var inp = document.getElementById('qw-input');
+    
+    // === 级联复习模式（答完后逐张查看卡片）===
+    if (_dictCascadeReview) {
+        if (advanceCascade()) {
+            // 全部卡片看完 → 下一个词
+            _dictCascadeReview = false;
+            idx++;
+            showWord();
+        } else {
+            // 还有卡片 → 更新按钮文案
+            var btn = document.querySelector('#quiz-area .btn-action');
+            if (btn) {
+                var remain = totalCascadeCards - cascadeIndex - 1;
+                btn.textContent = remain > 0 ? '查看下一张 ▶' : '下一个单词 ▶';
+            }
+        }
+        return;
+    }
+    
+    if(answered) return;
     if(!inp || inp.value.trim() === '') return;
     var userAns = inp.value.trim().toLowerCase();
     var target = currentQuizEntry.en.toLowerCase();
@@ -987,7 +1008,7 @@ function checkDictAnswer() {
         fb.innerHTML = '<span style="color:#34A853;">✅ 正确！' + (hinted ? '（提示后答对，不升盒）' : '（Box' + (currentQuizEntry._box || '?') + '→升盒）') + '</span>';
         speakWord(target);
         answered = true;
-        setTimeout(() => { idx++; showWord(); }, 800);
+        _enterCascadeReviewIfNeeded(inp);
     } else {
         // 3击缓冲
         if (!currentQuizEntry._strikes) currentQuizEntry._strikes = 0;
@@ -1020,10 +1041,32 @@ function checkDictAnswer() {
             speakWord(target);
             answered = true;
             inp.disabled = true;
-            setTimeout(() => { idx++; showWord(); }, 1500);
+            inp.style.color = '#D93025';
+            _enterCascadeReviewIfNeeded(inp);
         }
     }
     updateReviewStrikes();
+}
+
+function _enterCascadeReviewIfNeeded(inp) {
+    if (totalCascadeCards <= 0 || cascadeDone) {
+        // 无卡片或已看完 → 直接切词
+        setTimeout(() => { idx++; showWord(); }, 800);
+        return;
+    }
+    // 进入卡片逐张查看模式
+    _dictCascadeReview = true;
+    inp.disabled = false;
+    inp.readOnly = true;
+    inp.value = '';
+    inp.style.color = '';
+    inp.placeholder = '按回车查看卡片...';
+    inp.focus();
+    advanceCascade(); // 展示第一张卡片
+    var btn = document.querySelector('#quiz-area .btn-action');
+    if (btn) {
+        btn.textContent = totalCascadeCards > 1 ? '查看下一张 ▶' : '下一个单词 ▶';
+    }
 }
 
 function updateReviewStrikes() {
