@@ -3269,7 +3269,74 @@ function clearSubjectErrors() { var activeSubj = document.querySelector('.subj-t
 
 
 
-function speakWord(text) { var u = new SpeechSynthesisUtterance(text); u.lang = 'en-US'; u.rate = 0.85; speechSynthesis.cancel(); speechSynthesis.speak(u); }
+var _zkAudioEl = null;
+var _zkVoices = [];
+
+function _zkLoadVoices() { try { _zkVoices = speechSynthesis.getVoices(); } catch(e) { _zkVoices = []; } }
+if (typeof speechSynthesis !== 'undefined') {
+    _zkLoadVoices();
+    speechSynthesis.onvoiceschanged = _zkLoadVoices;
+}
+
+function _zkPickVoice(prefix, preferLocal) {
+    var vs = _zkVoices || [];
+    if (preferLocal) {
+        for (var i = 0; i < vs.length; i++) {
+            var v = vs[i];
+            if (v.lang && v.lang.toLowerCase().indexOf(prefix) === 0 && v.localService) return v;
+        }
+    }
+    for (var j = 0; j < vs.length; j++) {
+        var w = vs[j];
+        if (w.lang && w.lang.toLowerCase().indexOf(prefix) === 0) return w;
+    }
+    return null;
+}
+
+function _zkPlayAudio(url, onFail) {
+    try {
+        if (_zkAudioEl) { try { _zkAudioEl.pause(); _zkAudioEl.src = ''; } catch(e) {} }
+        _zkAudioEl = new Audio(url);
+        if (onFail) {
+            _zkAudioEl.onerror = function() { _zkAudioEl = null; onFail(); };
+        }
+        var p = _zkAudioEl.play();
+        if (p && p.catch) p.catch(function() { if (onFail) { _zkAudioEl = null; onFail(); } });
+    } catch(e) { if (onFail) onFail(); }
+}
+
+function _zkSpeakTTS(text, langPrefix, onFail) {
+    var voice = _zkPickVoice(langPrefix, true);
+    if (!voice) { if (onFail) onFail(); return; }
+    try {
+        speechSynthesis.cancel();
+        var u = new SpeechSynthesisUtterance(text);
+        u.voice = voice; u.lang = voice.lang; u.rate = 0.85;
+        if (onFail) u.onerror = function() { onFail(); };
+        speechSynthesis.speak(u);
+    } catch(e) { if (onFail) onFail(); }
+}
+
+function speakWord(text) {
+    if (!text) return;
+    var clean = String(text).trim();
+    if (!clean) return;
+    var hasCJK = /[\u4e00-\u9fff]/.test(clean);
+
+    if (!hasCJK) {
+        // 英文：优先有道真人发音（国内可达、音质好），失败回退本地 TTS
+        var wordForAudio = clean.replace(/[^\w\s'-]/g, '');
+        if (!wordForAudio) { _zkSpeakTTS(clean, 'en', null); return; }
+        _zkPlayAudio(
+            'https://dict.youdao.com/dictvoice?audio=' + encodeURIComponent(wordForAudio) + '&type=1',
+            function() { _zkSpeakTTS(clean, 'en', null); }
+        );
+        return;
+    }
+
+    // 含中文：用本地中文 TTS 语音朗读
+    _zkSpeakTTS(clean, 'zh', null);
+}
 
 function speakParagraph(btn) { var p = btn.parentElement; if(p) speakWord(p.textContent.trim()); }
 
