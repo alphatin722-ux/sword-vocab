@@ -1925,7 +1925,7 @@ function renderCard(e) {
 
         `;
 
-        if (isListen) speakWord(wordEn);
+        if (isListen) speakWord(wordEn, true);
 
         if (isAnagram) currentQuizEntry._hintUsed = true;
 
@@ -2147,7 +2147,7 @@ function renderCornellCard(body, cascadeCards, info) {
     var qa = document.getElementById('quiz-area');
     if (qa && !_cornellOpen) qa.style.display = 'none';
     openReciteFullscreen();
-    speakWord(wordEn);
+    speakWord(wordEn, true);
 }
 
 // 左栏组折叠/展开
@@ -2193,7 +2193,7 @@ function checkCornellAnswer() {
     if (userAns === target) {
         score++;
         stopReciteAudioLoop();
-        speakWord(target);
+        speakWord(target, true);
         inp.style.borderColor = '#34A853';
         inp.style.color = '#34A853';
         inp.value = '';
@@ -2288,7 +2288,7 @@ function startReciteAudioLoop(word) {
 
     if (reciteAudioTimer) clearInterval(reciteAudioTimer);
 
-    reciteAudioTimer = setInterval(function() { speakWord(word); }, 3000);
+    reciteAudioTimer = setInterval(function() { speakWord(word, true); }, 3000);
 
 }
 
@@ -2350,7 +2350,7 @@ function checkReciteAnswer() {
 
         var allRevealed = advanceCascade();
 
-        speakWord(target);
+        speakWord(target, true);
 
         inp.style.borderColor = '#34A853';
 
@@ -2486,7 +2486,7 @@ function checkDictAnswer() {
 
         }
 
-        speakWord(target);
+        speakWord(target, true);
 
         answered = true;
 
@@ -2516,7 +2516,7 @@ function checkDictAnswer() {
 
         fb.innerHTML = '<span style="color:#34A853;">✅ 正确！' + (hinted ? '（提示后答对，不升盒）' : '（Box' + (currentQuizEntry._box || '?') + '→升盒）') + '</span>';
 
-        speakWord(target);
+        speakWord(target, true);
 
         answered = true;
 
@@ -2580,7 +2580,7 @@ function checkDictAnswer() {
 
             fb.innerHTML = '<span style="color:#D93025;">❌ 答错，正确答案：<b>' + target + '</b>（降盒）</span>';
 
-            speakWord(target);
+            speakWord(target, true);
 
             answered = true;
 
@@ -3335,7 +3335,7 @@ function _zkSpeakTTS(text, langPrefix, onFail) {
 }
 
 var _zkLastSpeak = 0, _zkLastText = '';
-function speakWord(text) {
+function speakWord(text, noTTS) {
     if (!text) return;
     var clean = String(text).trim();
     if (!clean) return;
@@ -3348,10 +3348,12 @@ function speakWord(text) {
     if (!hasCJK) {
         // 英文：优先有道真人发音（国内可达、音质好），失败回退本地 TTS
         var wordForAudio = clean.replace(/[^\w\s'-]/g, '');
-        if (!wordForAudio) { _zkSpeakTTS(clean, 'en', null); return; }
+        if (!wordForAudio) { if (!noTTS) _zkSpeakTTS(clean, 'en', null); return; }
+        // 先掐掉残留 TTS（Google 语音可能还在读上一个词），再播有道 → 防双声叠加
+        try { speechSynthesis.cancel(); } catch(e) {}
         _zkPlayAudio(
             'https://dict.youdao.com/dictvoice?audio=' + encodeURIComponent(wordForAudio) + '&type=1',
-            function() { _zkSpeakTTS(clean, 'en', null); }
+            function() { if (!noTTS) _zkSpeakTTS(clean, 'en', null); }
         );
         return;
     }
