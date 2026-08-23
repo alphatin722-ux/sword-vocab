@@ -1847,11 +1847,11 @@ function renderCard(e) {
 
                 var lowerWord = wordEn.toLowerCase();
 
-                var idx = lowerEx.indexOf(lowerWord);
+                var exIdx = lowerEx.indexOf(lowerWord);
 
-                if (idx >= 0) {
+                if (exIdx >= 0) {
 
-                    blankedEx = exEn.substring(0, idx) + '______' + exEn.substring(idx + wordEn.length);
+                    blankedEx = exEn.substring(0, exIdx) + '______' + exEn.substring(exIdx + wordEn.length);
 
                 }
 
@@ -3280,28 +3280,45 @@ if (typeof speechSynthesis !== 'undefined') {
 
 function _zkPickVoice(prefix, preferLocal) {
     var vs = _zkVoices || [];
-    if (preferLocal) {
-        for (var i = 0; i < vs.length; i++) {
-            var v = vs[i];
-            if (v.lang && v.lang.toLowerCase().indexOf(prefix) === 0 && v.localService) return v;
+    // 美音优先：'en' 前缀时按 en-US → 任意 en → 最后 en-GB 的顺序选
+    var targets = (prefix === 'en')
+        ? [['en-us', 'en_us', 'en'], ['en'], ['en-gb', 'en_gb']]
+        : [[prefix]];
+    for (var t = 0; t < targets.length; t++) {
+        var pats = targets[t];
+        if (preferLocal) {
+            for (var i = 0; i < vs.length; i++) {
+                var v = vs[i], l = (v.lang || '').toLowerCase();
+                for (var k = 0; k < pats.length; k++) {
+                    if (l.indexOf(pats[k]) === 0 && v.localService) return v;
+                }
+            }
         }
-    }
-    for (var j = 0; j < vs.length; j++) {
-        var w = vs[j];
-        if (w.lang && w.lang.toLowerCase().indexOf(prefix) === 0) return w;
+        for (var j = 0; j < vs.length; j++) {
+            var w = vs[j], wl = (w.lang || '').toLowerCase();
+            for (var k2 = 0; k2 < pats.length; k2++) {
+                if (wl.indexOf(pats[k2]) === 0) return w;
+            }
+        }
     }
     return null;
 }
 
 function _zkPlayAudio(url, onFail) {
     try {
-        if (_zkAudioEl) { try { _zkAudioEl.pause(); _zkAudioEl.src = ''; } catch(e) {} }
-        _zkAudioEl = new Audio(url);
-        if (onFail) {
-            _zkAudioEl.onerror = function() { _zkAudioEl = null; onFail(); };
-        }
-        var p = _zkAudioEl.play();
-        if (p && p.catch) p.catch(function() { if (onFail) { _zkAudioEl = null; onFail(); } });
+        if (_zkAudioEl) { try { _zkAudioEl._zkDead = true; _zkAudioEl.pause(); _zkAudioEl.src = ''; } catch(e) {} }
+        var el = new Audio(url);
+        el._zkDead = false;
+        _zkAudioEl = el;
+        var failOnce = function() {
+            if (el._zkDead) return;              // 已被新发音取代：不再触发回退（防双声叠加）
+            el._zkDead = true;
+            if (_zkAudioEl === el) _zkAudioEl = null;
+            if (onFail) onFail();
+        };
+        el.onerror = failOnce;
+        var p = el.play();
+        if (p && p.catch) p.catch(function() { failOnce(); });
     } catch(e) { if (onFail) onFail(); }
 }
 
@@ -3317,10 +3334,15 @@ function _zkSpeakTTS(text, langPrefix, onFail) {
     } catch(e) { if (onFail) onFail(); }
 }
 
+var _zkLastSpeak = 0, _zkLastText = '';
 function speakWord(text) {
     if (!text) return;
     var clean = String(text).trim();
     if (!clean) return;
+    // 节流：同一词 1.2 秒内不重复发音（防连点/循环与手动叠加双声）
+    var now = Date.now();
+    if (clean === _zkLastText && now - _zkLastSpeak < 1200) return;
+    _zkLastText = clean; _zkLastSpeak = now;
     var hasCJK = /[\u4e00-\u9fff]/.test(clean);
 
     if (!hasCJK) {
@@ -3854,6 +3876,47 @@ window.onload = function() {
     // 然后执行原始初始化
 
     if (_origOnload) _origOnload();
+
+    // ?mark=教材索引|单元索引 或 范围(如 0|0-15) → 一键标记单元完成（标绿✓ + 全部词进Box1复习）
+    try {
+        var _qm = location.search.match(/[?&]mark=(\d+)\|([\d\-:]+)/);
+        if (_qm) {
+            var _tb = parseInt(_qm[1]);
+            var _rng = _qm[2];
+            var _lo = parseInt(_rng), _hi = parseInt(_rng);
+            if (_rng.indexOf('-') >= 0 || _rng.indexOf(':') >= 0) {
+                var _p = _rng.split(/[-:]/);
+                _lo = parseInt(_p[0]); _hi = parseInt(_p[1]);
+            }
+            var _names = [], _wcnt = 0;
+            for (var _i = _lo; _i <= _hi; _i++) {
+                var _u = (TEXTBOOKS[_tb] && TEXTBOOKS[_tb].units) ? TEXTBOOKS[_tb].units[_i] : null;
+                if (_u) { markCompleted(_tb, _i); _names.push(_u.name); _wcnt += _u.entries.length; }
+            }
+            if (_names.length) {
+                alert('✅ 已标记 ' + _names.length + ' 个单元完成：' + _names[0] + ' ~ ' + _names[_names.length - 1] + '（共 ' + _wcnt + ' 词进复习Box1）');
+            } else {
+                alert('⚠️ mark 参数无效: 教材=' + _tb + ' 范围=' + _rng);
+            }
+            history.replaceState(null, '', location.pathname);
+        }
+    } catch (e) {
+        console.warn('mark 参数处理失败', e);
+    }
+
+    // 自动补齐标记：初中考纲 0-15 单元（Alpha 已学完 2026-08-23）
+    // 幂等：localStorage 已标记的单元自动跳过，不重复、不覆盖
+    try {
+        var _compNow = getCompleted();
+        var _added = 0;
+        for (var _ai = 0; _ai <= 15; _ai++) {
+            var _ak = '0|' + _ai;
+            if (!_compNow[_ak]) { markCompleted(0, _ai); _added++; }
+        }
+        if (_added > 0) alert('✅ 已自动标记 ' + _added + ' 个单元完成（人体昼夜节律 ~ 闪电与雷声）');
+    } catch (e) {
+        console.warn('自动补齐标记失败', e);
+    }
 
     updateReviewList();
 
