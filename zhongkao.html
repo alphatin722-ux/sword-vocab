@@ -259,6 +259,9 @@
         .passage-text b { color: #0A56D0; font-weight: 700; }
 
         .passage-text b.gs { color: #D93025; font-weight: 700; }
+
+        /* gs 词组内部的嵌套单词标注继承红色（否则蓝红混杂） */
+        .passage-text b.gs b { color: inherit; font-weight: inherit; }
         .passage-text b.gs.highlight {
             background: #FDE7E9; color: #C5221F;
             border-radius: 4px; padding: 1px 4px; margin: -1px -4px;
@@ -915,6 +918,8 @@
 
             <button class="btn-start" id="start-btn" onclick="startQuiz()">开始默写</button>
 
+            <button class="btn-start" id="read-btn" onclick="startReading()" style="margin-top:8px;display:none;">📖 阅读短文</button>
+
             <div id="review-section">
 
                 <div class="review-header">⏰ 待复习单元</div>
@@ -1229,7 +1234,9 @@ function populateUnits() {
 
     document.getElementById('start-btn').style.display = 'none';
 
-    sel.onchange = function() { document.getElementById('start-btn').style.display = this.value !== '' ? 'block' : 'none'; };
+    document.getElementById('read-btn').style.display = 'none';
+
+    sel.onchange = function() { var show = this.value !== '' ? 'block' : 'none'; document.getElementById('start-btn').style.display = show; document.getElementById('read-btn').style.display = show; };
 
 }
 
@@ -1266,6 +1273,8 @@ function setMode(mode) {
         document.getElementById('writing-area').style.display = 'block';
 
         document.getElementById('start-btn').style.display = 'none';
+
+        document.getElementById('read-btn').style.display = 'none';
 
         initWritingSelectors();
 
@@ -1710,6 +1719,26 @@ function backToMenu() {
 
 
 
+function startReading() {
+
+    var unitIdx = parseInt(document.getElementById('unit-select').value);
+
+    if (isNaN(unitIdx)) return;
+
+    var unit = TEXTBOOKS[currentTb].units[unitIdx];
+
+    if (!unit || !unit.passage) { alert('该单元暂无短文'); return; }
+
+    words = [...unit.entries];
+
+    document.querySelectorAll('.card-area').forEach(el => el.style.display = 'none');
+
+    document.getElementById('quiz-area').style.display = 'block';
+
+    showPassage(unit.passage);
+
+}
+
 function startQuiz() {
 
     var unitIdx = document.getElementById('unit-select').value;
@@ -1717,7 +1746,6 @@ function startQuiz() {
     if (unitIdx === '') return;
 
     words = [...TEXTBOOKS[currentTb].units[unitIdx].entries].sort(() => Math.random() - 0.5);
-
     idx = 0; score = 0; answered = false; reciteStreak = 0;
 
     document.querySelectorAll('.card-area').forEach(el => el.style.display = 'none');
