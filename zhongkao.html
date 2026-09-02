@@ -286,6 +286,14 @@
             font-family: var(--font-en, "Inter", sans-serif);
         }
         #recite-fullscreen.open { display: flex; }
+        /* 背读防偷看(2026-09-02): 输入框聚焦 → 全内容毛玻璃模糊(含例句/线索), 防照抄; 失焦/判对恢复 */
+        #recite-fullscreen .cue-col, #recite-fullscreen .notes-scroll { transition: filter 0.25s ease; }
+        #recite-fullscreen.typing .cue-col,
+        #recite-fullscreen.typing .notes-scroll {
+            filter: blur(14px);
+            pointer-events: none;
+            user-select: none;
+        }
         @keyframes cornellFadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes cornellSlideUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes cueSlideIn { from { opacity: 0; transform: translateX(-16px); } to { opacity: 1; transform: translateX(0); } }
@@ -481,6 +489,12 @@
             background: #FFFFFF; letter-spacing: 2px; transition: border-color 0.2s, box-shadow 0.2s;
             font-family: var(--font-en, "Inter", sans-serif); color: #1A2530;
         }
+        .notes-col .notes-input-bar .notes-replay {
+            font-size: 24px; cursor: pointer; flex-shrink: 0; line-height: 1;
+            opacity: 0.8; transition: transform 0.15s, opacity 0.15s; user-select: none;
+        }
+        .notes-col .notes-input-bar .notes-replay:hover { opacity: 1; transform: scale(1.15); }
+        .notes-col .notes-input-bar .notes-replay:active { transform: scale(0.92); }
         .notes-col .notes-input-bar .dict-input:focus {
             border-color: #0A56D0;
             box-shadow: 0 2px 12px rgba(10,86,208,0.12);
@@ -2166,6 +2180,7 @@ function renderCornellCard(body, cascadeCards, info) {
                 (formsHtml ? '<div class="cornell-note-label">🧩 拓展</div>' + formsHtml : '') +
             '</div>' +
             '<div class="notes-input-bar">' +
+                '<span class="notes-replay" onclick="event.preventDefault();speakWord(\'' + wordEn.replace(/'/g, "\\'") + '\')" title="重听发音">🔊</span>' +
                 '<input type="text" id="qw-input" class="dict-input" placeholder="输入这个单词..." autocomplete="off" onkeypress="if(event.key === \'Enter\') checkCornellAnswer()">' +
                 '<button class="btn-action" onclick="checkCornellAnswer()">确认</button>' +
             '</div>' +
@@ -2175,6 +2190,14 @@ function renderCornellCard(body, cascadeCards, info) {
     document.getElementById('cornell-progress').textContent = (idx + 1) + ' / ' + words.length;
     document.getElementById('progress-text').textContent = (idx + 1) + ' / ' + words.length;
     document.getElementById('progress-fill').style.width = ((idx / words.length) * 100) + '%';
+
+    // 防偷看: 输入框聚焦 → 遮单词行; 失焦 → 恢复 (2026-09-02恢复)
+    var cinp = document.getElementById('qw-input');
+    var cfs = document.getElementById('recite-fullscreen');
+    if (cinp && cfs) {
+        cinp.addEventListener('focus', function () { cfs.classList.add('typing'); });
+        cinp.addEventListener('blur', function () { cfs.classList.remove('typing'); });
+    }
 
     // 主区隐藏，全屏接管
     var qa = document.getElementById('quiz-area');
@@ -2231,6 +2254,8 @@ function checkCornellAnswer() {
         inp.style.color = '#34A853';
         inp.value = '';
         inp.disabled = true;
+        var cf = document.getElementById('recite-fullscreen');
+        if (cf) cf.classList.remove('typing'); // 判对 → 揭晓单词
         setTimeout(() => { idx++; showWord(); }, 700);
     } else {
         playErrorBeep();
