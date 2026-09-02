@@ -1813,7 +1813,12 @@ function renderCard(e) {
 
     var wordEn = enr.word || e.en;
 
-    var displayWord = enr.syllables ? enr.syllables.replace(/•/g, '·') : wordEn;
+    // 音节防御(2026-09-02): 屈折词条(kept/made/animals...)的 syllables 错存原形(如 kept→"keep"),
+    // 导致背读显示原形单词、判分却要求屈折词 → 拼写正确也判错。音节串拼回 ≠ 实际单词时,
+    // 直接用单词本身做显示词, 保证"所见即所判"。
+    var sylNorm = enr.syllables ? enr.syllables.replace(/[•·\s]/g, '') : '';
+    var displayWord = (sylNorm && sylNorm.toLowerCase() === wordEn.toLowerCase())
+        ? enr.syllables.replace(/•/g, '·') : wordEn;
 
     var phonetic = enr.phonetic || '';
 
