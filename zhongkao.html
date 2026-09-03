@@ -2017,10 +2017,7 @@ document.addEventListener('keydown', function (ev) {
     var inInput = (ev.target && ev.target.id === 'qw-input');
     if (ev.key === 'Enter') {
         if (inInput) return; // 输入框的 onkeypress 处理提交
-        ev.preventDefault();
-        stopReciteAudioLoop();
-        idx++;
-        showWord();
+        ev.preventDefault(); // 输入框外空回车不再切词（2026-09-03 bug：判对换词后焦点丢失，Enter 落到 body 误跳词）
         return;
     }
     if (ev.key === 'ArrowRight' && !inInput) {
