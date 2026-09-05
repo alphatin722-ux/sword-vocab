@@ -1,0 +1,491 @@
+{
+ "textbook": "校内英语",
+ "append": true,
+ "units": [
+  {
+   "name": "6A Starter P1 Meet our new friends",
+   "entries": [
+    {
+     "cn": "遇见，（与某人）会面",
+     "en": "meet",
+     "type": "word"
+    },
+    {
+     "cn": "介绍",
+     "en": "introduce",
+     "type": "word"
+    },
+    {
+     "cn": "字母表",
+     "en": "alphabet",
+     "type": "word"
+    },
+    {
+     "cn": "售卖",
+     "en": "sell",
+     "type": "word"
+    },
+    {
+     "cn": "贝壳",
+     "en": "seashell",
+     "type": "word"
+    },
+    {
+     "cn": "选择",
+     "en": "choose",
+     "type": "word"
+    },
+    {
+     "cn": "开学第一天",
+     "en": "the first day of school",
+     "type": "phrase"
+    },
+    {
+     "cn": "欢迎六年级的新同学",
+     "en": "welcome the new Grade 6 students",
+     "type": "phrase"
+    },
+    {
+     "cn": "在课堂上",
+     "en": "in class",
+     "type": "phrase"
+    },
+    {
+     "cn": "自我介绍",
+     "en": "introduce oneself",
+     "type": "phrase"
+    },
+    {
+     "cn": "在你的空闲时间",
+     "en": "in your free time",
+     "type": "phrase"
+    },
+    {
+     "cn": "弹钢琴和打篮球",
+     "en": "play the piano and play basketball",
+     "type": "phrase"
+    },
+    {
+     "cn": "拍照",
+     "en": "take photos",
+     "type": "phrase"
+    },
+    {
+     "cn": "很高兴遇见你们！",
+     "en": "Nice to meet you all!",
+     "type": "sentence"
+    },
+    {
+     "cn": "英语字母表里的第五个字母",
+     "en": "the fifth letter of the English alphabet",
+     "type": "phrase"
+    },
+    {
+     "cn": "回答你所有的问题",
+     "en": "answer all your questions",
+     "type": "phrase"
+    },
+    {
+     "cn": "把贝壳卖给我",
+     "en": "sell seashells to me",
+     "type": "phrase"
+    }
+   ]
+  },
+  {
+   "name": "6A Starter P2 Open the schoolbag",
+   "entries": [
+    {
+     "cn": "丢失的",
+     "en": "missing",
+     "type": "word"
+    },
+    {
+     "cn": "错过；思念",
+     "en": "miss",
+     "type": "word"
+    },
+    {
+     "cn": "重的",
+     "en": "heavy",
+     "type": "word"
+    },
+    {
+     "cn": "字典",
+     "en": "dictionary",
+     "type": "word"
+    },
+    {
+     "cn": "秘密；保密的",
+     "en": "secret",
+     "type": "word"
+    },
+    {
+     "cn": "表达",
+     "en": "expression",
+     "type": "word"
+    },
+    {
+     "cn": "提高",
+     "en": "improve",
+     "type": "word"
+    },
+    {
+     "cn": "口头的",
+     "en": "oral",
+     "type": "word"
+    },
+    {
+     "cn": "重复",
+     "en": "repeat",
+     "type": "word"
+    },
+    {
+     "cn": "记录",
+     "en": "record",
+     "type": "word"
+    },
+    {
+     "cn": "录音",
+     "en": "recording",
+     "type": "word"
+    },
+    {
+     "cn": "背诵",
+     "en": "recite",
+     "type": "word"
+    },
+    {
+     "cn": "文章",
+     "en": "text",
+     "type": "word"
+    },
+    {
+     "cn": "诀窍，建议",
+     "en": "tip",
+     "type": "word"
+    },
+    {
+     "cn": "词条",
+     "en": "entry",
+     "type": "word"
+    },
+    {
+     "cn": "今天是上学的日子。",
+     "en": "It's a school day.",
+     "type": "sentence"
+    },
+    {
+     "cn": "准备上课",
+     "en": "get ready for class",
+     "type": "phrase"
+    },
+    {
+     "cn": "准备好我的红领巾",
+     "en": "get my red scarf ready",
+     "type": "phrase"
+    },
+    {
+     "cn": "把所有东西都拿出来",
+     "en": "take out everything",
+     "type": "phrase"
+    },
+    {
+     "cn": "一本英汉词典",
+     "en": "an English-Chinese dictionary",
+     "type": "phrase"
+    },
+    {
+     "cn": "这就是你学习英语的秘诀。",
+     "en": "This is your secret to English learning.",
+     "type": "sentence"
+    },
+    {
+     "cn": "你的书包里有什么？",
+     "en": "What's in your schoolbag?",
+     "type": "sentence"
+    },
+    {
+     "cn": "某人做某事的方式",
+     "en": "one's way of (doing) sth.",
+     "type": "phrase"
+    },
+    {
+     "cn": "我通过使用英语来学习英语。",
+     "en": "I learn English by using it.",
+     "type": "sentence"
+    },
+    {
+     "cn": "用笔记本记下新单词",
+     "en": "keep a notebook and write down new words",
+     "type": "phrase"
+    },
+    {
+     "cn": "用英语写日记",
+     "en": "keep a diary in English",
+     "type": "phrase"
+    },
+    {
+     "cn": "找到更多做…的方法",
+     "en": "find more ways of doing ...",
+     "type": "phrase"
+    },
+    {
+     "cn": "提高我的英语口语",
+     "en": "improve my oral English",
+     "type": "phrase"
+    },
+    {
+     "cn": "跟读音频",
+     "en": "repeat after recordings",
+     "type": "phrase"
+    },
+    {
+     "cn": "背诵英语课文",
+     "en": "recite English texts",
+     "type": "phrase"
+    },
+    {
+     "cn": "英语使用技巧",
+     "en": "tips on using English",
+     "type": "phrase"
+    }
+   ]
+  },
+  {
+   "name": "6A Starter P3 Plan my time",
+   "entries": [
+    {
+     "cn": "消息，信息",
+     "en": "message",
+     "type": "word"
+    },
+    {
+     "cn": "主题，学科",
+     "en": "subject",
+     "type": "word"
+    },
+    {
+     "cn": "朋友，伙伴",
+     "en": "pal",
+     "type": "word"
+    },
+    {
+     "cn": "聊天",
+     "en": "chat",
+     "type": "word"
+    },
+    {
+     "cn": "任务",
+     "en": "task",
+     "type": "word"
+    },
+    {
+     "cn": "更新",
+     "en": "update",
+     "type": "word"
+    },
+    {
+     "cn": "复习，回顾；检查；评论",
+     "en": "review",
+     "type": "word"
+    },
+    {
+     "cn": "讨论",
+     "en": "discuss",
+     "type": "word"
+    },
+    {
+     "cn": "诗",
+     "en": "poem",
+     "type": "word"
+    },
+    {
+     "cn": "杂志",
+     "en": "magazine",
+     "type": "word"
+    },
+    {
+     "cn": "日记，期刊",
+     "en": "journal",
+     "type": "word"
+    },
+    {
+     "cn": "阅读朋友发来的电子邮件",
+     "en": "read emails from his friends",
+     "type": "phrase"
+    },
+    {
+     "cn": "新信息/消息",
+     "en": "new message",
+     "type": "phrase"
+    },
+    {
+     "cn": "（进行）视频聊天",
+     "en": "have a video chat",
+     "type": "phrase"
+    },
+    {
+     "cn": "带你参观我的新家",
+     "en": "show you around my new home",
+     "type": "phrase"
+    },
+    {
+     "cn": "收到你的来信",
+     "en": "hear from you",
+     "type": "phrase"
+    },
+    {
+     "cn": "和某人交谈/聊天",
+     "en": "talk to / with sb.",
+     "type": "phrase"
+    },
+    {
+     "cn": "把时间切分成…",
+     "en": "cut time into...",
+     "type": "phrase"
+    },
+    {
+     "cn": "列一张待办事项清单，并按照它去做",
+     "en": "keep a to-do list and follow it",
+     "type": "phrase"
+    },
+    {
+     "cn": "每隔一天",
+     "en": "every other day",
+     "type": "phrase"
+    },
+    {
+     "cn": "思维导图",
+     "en": "a mind map",
+     "type": "phrase"
+    },
+    {
+     "cn": "和你的伙伴讨论…",
+     "en": "discuss... with your partners",
+     "type": "phrase"
+    },
+    {
+     "cn": "坚持写周记",
+     "en": "keep a weekly journal",
+     "type": "phrase"
+    }
+   ]
+  },
+  {
+   "name": "6A Starter P4 Yes, I'm ready!",
+   "entries": [
+    {
+     "cn": "简单的",
+     "en": "simple",
+     "type": "word"
+    },
+    {
+     "cn": "句子",
+     "en": "sentence",
+     "type": "word"
+    },
+    {
+     "cn": "结果",
+     "en": "results",
+     "type": "word"
+    },
+    {
+     "cn": "文学，文献",
+     "en": "literature",
+     "type": "word"
+    },
+    {
+     "cn": "章节",
+     "en": "chapter",
+     "type": "word"
+    },
+    {
+     "cn": "发现",
+     "en": "discovery",
+     "type": "word"
+    },
+    {
+     "cn": "调查",
+     "en": "survey",
+     "type": "word"
+    },
+    {
+     "cn": "理解",
+     "en": "understand",
+     "type": "word"
+    },
+    {
+     "cn": "项目，专题研究",
+     "en": "project",
+     "type": "word"
+    },
+    {
+     "cn": "谈论他们能用英语做些什么",
+     "en": "talk about what they can do with English",
+     "type": "phrase"
+    },
+    {
+     "cn": "在字典里查新单词",
+     "en": "look up new words in a dictionary",
+     "type": "phrase"
+    },
+    {
+     "cn": "造句",
+     "en": "make sentences",
+     "type": "phrase"
+    },
+    {
+     "cn": "文学角",
+     "en": "Literature corner",
+     "type": "phrase"
+    },
+    {
+     "cn": "读、写26个字母",
+     "en": "read and write 26 letters",
+     "type": "phrase"
+    },
+    {
+     "cn": "向来自世界各地的人们介绍中国",
+     "en": "introduce China to people from different parts of the world",
+     "type": "phrase"
+    },
+    {
+     "cn": "文化角（板块）",
+     "en": "Culture corner",
+     "type": "phrase"
+    },
+    {
+     "cn": "用英语介绍中国文化",
+     "en": "introduce Chinese culture in English",
+     "type": "phrase"
+    },
+    {
+     "cn": "你得了多少分？",
+     "en": "How many points do you get?",
+     "type": "sentence"
+    },
+    {
+     "cn": "更好地了解世界",
+     "en": "get to know the world better",
+     "type": "phrase"
+    },
+    {
+     "cn": "轮流做…",
+     "en": "take turns to do",
+     "type": "phrase"
+    },
+    {
+     "cn": "复习课上内容",
+     "en": "review the lesson",
+     "type": "phrase"
+    },
+    {
+     "cn": "读一份英文报纸和一本英文杂志",
+     "en": "read an English newspaper and an English magazine",
+     "type": "phrase"
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,269 @@
+{
+ "meet": {
+  "syllables": "meet",
+  "phonetic": "/miːt/",
+  "cn": "遇见，（与某人）会面",
+  "word_forms": "meeting n. 会议；meet up with 碰面",
+  "tips": "meet 第一次见面 vs know 认识"
+ },
+ "introduce": {
+  "syllables": "in•tro•duce",
+  "phonetic": "/ˌɪntrəˈdjuːs/",
+  "cn": "介绍",
+  "word_forms": "introduction n. 介绍",
+  "tips": "introduce A to B 把A介绍给B（方向别反）"
+ },
+ "alphabet": {
+  "syllables": "al•pha•bet",
+  "phonetic": "/ˈælfəbet/",
+  "cn": "字母表",
+  "word_forms": "alphabetical adj. 按字母顺序的",
+  "tips": "alpha + beta 希腊字母前两位"
+ },
+ "sell": {
+  "syllables": "sell",
+  "phonetic": "/sel/",
+  "cn": "售卖",
+  "word_forms": "sale n. 出售（sold-sold）",
+  "collocations": "on sale 打折出售；for sale 待售"
+ },
+ "seashell": {
+  "syllables": "sea•shell",
+  "phonetic": "/ˈsiːʃel/",
+  "cn": "贝壳",
+  "word_forms": "sea + shell 复合词；shellfish n. 贝类海鲜"
+ },
+ "choose": {
+  "syllables": "choose",
+  "phonetic": "/tʃuːz/",
+  "cn": "选择",
+  "word_forms": "choice n. 选择（chose-chosen）",
+  "collocations": "have no choice but to do 别无选择只能做"
+ },
+ "missing": {
+  "syllables": "miss•ing",
+  "phonetic": "/ˈmɪsɪŋ/",
+  "cn": "丢失的",
+  "word_forms": "miss v. 错过；思念（现在分词作形容词）",
+  "collocations": "miss the bus 错过公交车",
+  "tips": "missing 丢了的状态 vs miss 想念的动作"
+ },
+ "miss": {
+  "syllables": "miss",
+  "phonetic": "/mɪs/",
+  "cn": "错过；思念",
+  "collocations": "miss the bus 错过公交车；miss you 想念你"
+ },
+ "heavy": {
+  "syllables": "heav•y",
+  "phonetic": "/ˈhevi/",
+  "cn": "重的",
+  "word_forms": "heavily adv.；反义 light 轻的"
+ },
+ "dictionary": {
+  "syllables": "dic•tion•ar•y",
+  "phonetic": "/ˈdɪkʃənri/",
+  "cn": "字典",
+  "word_forms": "复数 dictionaries",
+  "tips": "dict- 词根“说”：dictation 听写"
+ },
+ "secret": {
+  "syllables": "se•cret",
+  "phonetic": "/ˈsiːkrət/",
+  "cn": "秘密；保密的",
+  "word_forms": "secretly adv.",
+  "collocations": "keep a secret 保守秘密"
+ },
+ "expression": {
+  "syllables": "ex•pres•sion",
+  "phonetic": "/ɪkˈspreʃn/",
+  "cn": "表达",
+  "word_forms": "express v. 表达",
+  "collocations": "facial expression 面部表情"
+ },
+ "improve": {
+  "syllables": "im•prove",
+  "phonetic": "/ɪmˈpruːv/",
+  "cn": "提高",
+  "word_forms": "improvement n. 改进"
+ },
+ "oral": {
+  "syllables": "o•ral",
+  "phonetic": "/ˈɔːrəl/",
+  "cn": "口头的",
+  "tips": "反义 written 书面的；oral English 英语口语"
+ },
+ "repeat": {
+  "syllables": "re•peat",
+  "phonetic": "/rɪˈpiːt/",
+  "cn": "重复",
+  "word_forms": "repetition n. 重复",
+  "tips": "re-（再）"
+ },
+ "record": {
+  "syllables": "re•cord",
+  "phonetic": "/rɪˈkɔːd/",
+  "cn": "记录",
+  "word_forms": "recording n. 录音；recorder n. 录音机",
+  "tips": "n. 读 /ˈrekɔːd/ 记录、唱片；v. 读 /rɪˈkɔːd/ 记录"
+ },
+ "recording": {
+  "syllables": "re•cord•ing",
+  "phonetic": "/rɪˈkɔːdɪŋ/",
+  "cn": "录音",
+  "word_forms": "record v. 记录"
+ },
+ "recite": {
+  "syllables": "re•cite",
+  "phonetic": "/rɪˈsaɪt/",
+  "cn": "背诵",
+  "word_forms": "recitation n. 背诵"
+ },
+ "text": {
+  "syllables": "text",
+  "phonetic": "/tekst/",
+  "cn": "文章",
+  "word_forms": "textbook n. 课本",
+  "collocations": "text message 短信"
+ },
+ "tip": {
+  "syllables": "tip",
+  "phonetic": "/tɪp/",
+  "cn": "诀窍，建议",
+  "tips": "一词三义：建议 / 小费 / 尖端"
+ },
+ "entry": {
+  "syllables": "en•try",
+  "phonetic": "/ˈentri/",
+  "cn": "词条",
+  "word_forms": "enter v. 进入；entrance n. 入口"
+ },
+ "message": {
+  "syllables": "mes•sage",
+  "phonetic": "/ˈmesɪdʒ/",
+  "cn": "消息，信息",
+  "collocations": "leave a message 留言；text message 短信",
+  "tips": "别拼成 massage（按摩）"
+ },
+ "subject": {
+  "syllables": "sub•ject",
+  "phonetic": "/ˈsʌbdʒɪkt/",
+  "cn": "主题，学科",
+  "tips": "一词四义：主题 / 学科 / 主语 / 国民"
+ },
+ "pal": {
+  "syllables": "pal",
+  "phonetic": "/pæl/",
+  "cn": "朋友，伙伴",
+  "collocations": "pen pal 笔友"
+ },
+ "chat": {
+  "syllables": "chat",
+  "phonetic": "/tʃæt/",
+  "cn": "聊天",
+  "collocations": "chat with sb. 与某人聊天；chat room 聊天室"
+ },
+ "task": {
+  "syllables": "task",
+  "phonetic": "/tɑːsk/",
+  "cn": "任务",
+  "collocations": "do a task 做任务"
+ },
+ "update": {
+  "syllables": "up•date",
+  "phonetic": "/ˌʌpˈdeɪt/",
+  "cn": "更新",
+  "word_forms": "up-to-date adj. 最新的"
+ },
+ "review": {
+  "syllables": "re•view",
+  "phonetic": "/rɪˈvjuː/",
+  "cn": "复习，回顾；检查；评论",
+  "word_forms": "preview v. 预习（反义）",
+  "tips": "re-（再）+ view（看）"
+ },
+ "discuss": {
+  "syllables": "dis•cuss",
+  "phonetic": "/dɪˈskʌs/",
+  "cn": "讨论",
+  "word_forms": "discussion n. 讨论",
+  "tips": "discuss sth. with sb."
+ },
+ "poem": {
+  "syllables": "po•em",
+  "phonetic": "/ˈpəʊɪm/",
+  "cn": "诗",
+  "word_forms": "poet n. 诗人；poetry n. 诗歌（总称）"
+ },
+ "magazine": {
+  "syllables": "mag•a•zine",
+  "phonetic": "/ˌmæɡəˈziːn/",
+  "cn": "杂志"
+ },
+ "journal": {
+  "syllables": "jour•nal",
+  "phonetic": "/ˈdʒɜːnl/",
+  "cn": "日记，期刊",
+  "word_forms": "journalist n. 记者",
+  "tips": "diary 私人日记 vs journal 期刊"
+ },
+ "simple": {
+  "syllables": "sim•ple",
+  "phonetic": "/ˈsɪmpl/",
+  "cn": "简单的",
+  "word_forms": "simply adv.；simplify v. 简化",
+  "tips": "反义 complicated 复杂的"
+ },
+ "sentence": {
+  "syllables": "sen•tence",
+  "phonetic": "/ˈsentəns/",
+  "cn": "句子",
+  "collocations": "make sentences 造句",
+  "tips": "一词两义：句子 / 判决"
+ },
+ "results": {
+  "syllables": "re•sults",
+  "phonetic": "/rɪˈzʌlts/",
+  "cn": "结果",
+  "collocations": "as a result 结果；as a result of 由于；result in 导致"
+ },
+ "literature": {
+  "syllables": "lit•er•a•ture",
+  "phonetic": "/ˈlɪtrətʃə/",
+  "cn": "文学，文献",
+  "word_forms": "literary adj. 文学的"
+ },
+ "chapter": {
+  "syllables": "chap•ter",
+  "phonetic": "/ˈtʃæptə/",
+  "cn": "章节",
+  "tips": "缩写 ch./chap."
+ },
+ "discovery": {
+  "syllables": "dis•cov•er•y",
+  "phonetic": "/dɪˈskʌvəri/",
+  "cn": "发现",
+  "word_forms": "discover v. 发现",
+  "tips": "dis-（除去）+ cover（盖子）→ 揭开；discover 发现（本来就有）vs invent 发明（原本没有）"
+ },
+ "survey": {
+  "syllables": "sur•vey",
+  "phonetic": "/ˈsɜːveɪ/",
+  "cn": "调查",
+  "collocations": "do a survey 做调查",
+  "tips": "n. 读 /ˈsɜːveɪ/；v. 读 /səˈveɪ/"
+ },
+ "understand": {
+  "syllables": "un•der•stand",
+  "phonetic": "/ˌʌndəˈstænd/",
+  "cn": "理解",
+  "word_forms": "understanding n. 理解；misunderstand v. 误解",
+  "tips": "understood-understood"
+ },
+ "project": {
+  "syllables": "proj•ect",
+  "phonetic": "/ˈprɒdʒekt/",
+  "cn": "项目，专题研究",
+  "tips": "n. 项目读 /ˈprɒdʒekt/；v. 投射读 /prəˈdʒekt/"
+ }
+}
