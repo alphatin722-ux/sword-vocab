@@ -1031,6 +1031,8 @@
 
             <div style="text-align: center; margin-top: 24px;">
 
+                <button onclick="startErrorReview()" style="padding: 10px 20px; background: #0A56D0; color: #FFF; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-right: 12px;">📝 复习错词</button>
+
                 <button onclick="clearSubjectErrors()" style="padding: 10px 20px; background: #FFF; border: 1px solid #D93025; color: #D93025; border-radius: 10px; font-weight: bold; cursor: pointer;">🗑️ 清空当前学科</button>
 
             </div>
@@ -1850,7 +1852,7 @@ function renderCard(e) {
 
     body.innerHTML = ''; 
 
-    document.getElementById('progress-text').textContent = `${idx + 1} / ${words.length}`;
+    document.getElementById('progress-text').textContent = (errorReviewMode ? '📓 错词复习 ' : '') + `${idx + 1} / ${words.length}`;
 
     document.getElementById('progress-fill').style.width = `${(idx / words.length) * 100}%`;
 
@@ -2669,6 +2671,8 @@ function checkDictAnswer() {
 
         if (currentQuizEntry._box && !hinted) upgradeBox(target);
 
+        applyErrorReviewResult(target);
+
         _style('#34A853');
 
         fb.innerHTML = '<span style="color:#34A853;">✅ 正确！' + (hinted ? '（提示后答对，不升盒）' : '（Box' + (currentQuizEntry._box || '?') + '→升盒）') + '</span>';
@@ -2972,6 +2976,10 @@ function selectChoice(el) {
 
 function finishQuiz() {
 
+    var wasErrReview = errorReviewMode;
+
+    errorReviewMode = false;
+
     document.getElementById('quiz-area').style.display = 'none'; 
 
     document.getElementById('result-area').style.display = 'block';
@@ -2984,7 +2992,7 @@ function finishQuiz() {
 
     
 
-    if (pct >= 0.7 && !delayMode) {
+    if (pct >= 0.7 && !delayMode && !wasErrReview) {
 
         var unitIdx = document.getElementById('unit-select').value;
 
@@ -3429,6 +3437,7 @@ function saveError(cn, en) {
     var k = en.toLowerCase();
     if (!err[k]) err[k] = { cn: cn, en: en, subj: 'eng', count: 0 };
     err[k].count++;
+    err[k].lastErr = new Date().toISOString();
     try {
         localStorage.setItem('zk_errors', JSON.stringify(err));
     } catch (e) {
@@ -3461,7 +3470,27 @@ function showSubjectErrors(subj) {
 
     var err = getErrors(), html = '';
 
-    for(var k in err) { if((err[k].subj || 'eng') === subj) html += `<div class="error-item"><span style="font-size:16px; color:#1A2530; font-weight:500;">${err[k].cn} — <strong style="color:#0A56D0;">${err[k].en}</strong> (错 ${err[k].count} 次)</span><span class="error-del" onclick="delError('${k}', '${subj}')">❌</span></div>`; }
+    // 按最新错误时间排序：新 → 旧（无时间的历史错题排最后）
+
+    var _items = [];
+
+    for(var k in err) { if((err[k].subj || 'eng') === subj) _items.push({ k: k, e: err[k] }); }
+
+    _items.sort(function(a, b) {
+
+        var ta = a.e.lastErr || '', tb = b.e.lastErr || '';
+
+        if (!ta && !tb) return 0;
+
+        if (!ta) return 1;
+
+        if (!tb) return -1;
+
+        return tb.localeCompare(ta);
+
+    });
+
+    for(var i = 0; i < _items.length; i++) { var k = _items[i].k; html += `<div class="error-item"><span style="font-size:16px; color:#1A2530; font-weight:500;">${err[k].cn} — <strong style="color:#0A56D0;">${err[k].en}</strong> (错 ${err[k].count} 次<span style="font-size:12px;color:#9AA0A6;">${err[k].lastErr ? ' · 最新 ' + _fmtErrTime(err[k].lastErr) : ''}</span>)</span><span class="error-del" onclick="delError('${k}', '${subj}')">❌</span></div>`; }
 
     document.getElementById('error-list').innerHTML = html || '<div style="text-align:center; padding: 30px; color:#9AA0A6;">当前学科暂无错题 🎉</div>';
 
@@ -3470,6 +3499,47 @@ function showSubjectErrors(subj) {
 function delError(k, subj) { var err = getErrors(); delete err[k]; localStorage.setItem('zk_errors', JSON.stringify(err)); updateErrorBadge(); showSubjectErrors(subj); }
 
 function clearSubjectErrors() { var activeSubj = document.querySelector('.subj-tab.active').id.replace('err-tab-', ''); var err = getErrors(); for(var k in err) { if((err[k].subj || 'eng') === activeSubj) delete err[k]; } localStorage.setItem('zk_errors', JSON.stringify(err)); updateErrorBadge(); showSubjectErrors(activeSubj); }
+
+var errorReviewMode = false;
+
+function _fmtErrTime(iso) {
+    try {
+        var d = new Date(iso);
+        if (isNaN(d.getTime())) return iso;
+        var p = function(n){ return (n < 10 ? '0' : '') + n; };
+        return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+    } catch(e) { return iso; }
+}
+
+// 复习错词：错题本所有错词重新默写，规则同默写板块；每对一次 count-1，减到 0 移出错题本
+function startErrorReview() {
+    var err = getErrors();
+    var activeSubj = document.querySelector('.subj-tab.active').id.replace('err-tab-', '');
+    var items = [];
+    for (var k in err) { if ((err[k].subj || 'eng') === activeSubj) items.push(err[k]); }
+    if (!items.length) { alert('当前学科暂无错词 🎉'); return; }
+    errorReviewMode = true;
+    words = items.map(function(it) { return { en: it.en, cn: it.cn, type: 'word' }; });
+    words.sort(function() { return Math.random() - 0.5; });
+    idx = 0; score = 0; answered = false; reciteStreak = 0;
+    activeMode = 'dictation';
+    document.querySelectorAll('.card-area').forEach(function(el) { el.style.display = 'none'; });
+    document.getElementById('quiz-area').style.display = 'block';
+    document.getElementById('progress-text').textContent = '📓 错词复习';
+    showWord();
+}
+
+// 错词复习模式下：答对 → count-1，减到 0 从错题本移除（答错由 saveError 的 count++ 处理）
+function applyErrorReviewResult(word) {
+    if (!errorReviewMode) return;
+    var err = getErrors();
+    var k = word.toLowerCase();
+    if (!err[k]) return;
+    err[k].count = Math.max(0, (err[k].count || 1) - 1);
+    if (err[k].count <= 0) delete err[k];
+    localStorage.setItem('zk_errors', JSON.stringify(err));
+    updateErrorBadge();
+}
 
 
 
