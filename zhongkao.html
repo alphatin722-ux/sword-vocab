@@ -2050,7 +2050,7 @@ var _cornellDefaultEx = '';    // 当前词默认例句 HTML（用于返回）
 var _cornellPhraseMap = {};    // type 索引 → 词条数据
 
 function _normAns(s) {
-    return String(s || '').toLowerCase().replace(/[^a-z0-9 ]/g, '').replace(/\s+/g, ' ').trim();
+    return String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
 }
 
 function _fmtForms(s) {
@@ -3113,7 +3113,7 @@ function submitRetry(logIdx, word) {
 
     
 
-    if (ans === word.toLowerCase()) {
+    if (_normAns(ans) === _normAns(word)) {
 
         upgradeBox(word);
 
