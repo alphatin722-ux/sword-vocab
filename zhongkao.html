@@ -164,6 +164,19 @@
 
         .dict-input { width: 100%; padding: 18px; border: 2px solid #E3E8EE; border-radius: 12px; font-size: 22px; text-align: center; font-weight: bold; color: #1A2530; margin-bottom: 20px; outline: none; transition: 0.2s; background: #FAFAFA; }
 
+        .qw-boxes { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+        .qw-box {
+            height: 46px;
+            background: rgba(240,246,250,0.78);
+            border: 1px solid rgba(255,255,255,0.18);
+            border-radius: 4px;
+            font-size: 18px; font-weight: 600; text-align: center;
+            outline: none; padding: 0 6px;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.06);
+            color: #1A2530;
+        }
+        .qw-box:focus { border-color: #E67E22; }
+        .qw-box.hint-mode { border-color: #E65100; }
         .dict-input:focus { border-color: #0A56D0; background: #FFF; box-shadow: 0 0 0 3px rgba(10,86,208,0.1); }
 
         .btn-action { width: 100%; padding: 14px; background: #0A56D0; color: #FFF; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s; }
@@ -504,7 +517,20 @@
         }
         .notes-col .notes-input-bar .notes-replay:hover { opacity: 1; transform: scale(1.15); }
         .notes-col .notes-input-bar .notes-replay:active { transform: scale(0.92); }
-        .notes-col .notes-input-bar .dict-input:focus {
+        .notes-col .notes-input-bar .qw-boxes { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+        .qw-box {
+            height: 46px;
+            background: rgba(240,246,250,0.78);
+            border: 1px solid rgba(255,255,255,0.18);
+            border-radius: 4px;
+            font-size: 18px; font-weight: 600; text-align: center;
+            outline: none; padding: 0 6px;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.06);
+            color: #1A2530;
+        }
+        .qw-box:focus { border-color: #E67E22; }
+        .qw-box.hint-mode { border-color: #E65100; }
+        .dict-input:focus {
             border-color: #0A56D0;
             box-shadow: 0 2px 12px rgba(10,86,208,0.12);
         }
@@ -1971,7 +1997,7 @@ function renderCard(e) {
 
             ${delayMode ? '' : '<div class="strike-info" id="strike-info"></div>'}
 
-            ${isChoice ? '' : '<input type="text" id="qw-input" class="dict-input" placeholder="' + (isListen?'听到的单词是...':(isAnagram?'还原单词...':'拼写英文单词...')) + '" autocomplete="off" onkeypress="if(event.key==\'Enter\') checkDictAnswer()">'}
+            ${isChoice ? '' : (delayMode ? '<input type="text" id="qw-input" class="dict-input" placeholder="' + (isListen?'听到的单词是...':(isAnagram?'还原单词...':'拼写英文单词...')) + '" autocomplete="off" onkeypress="if(event.key==\'Enter\') checkDictAnswer()">' : buildWordBoxes(wordEn))}
 
             <div id="qw-feedback" style="text-align:center; min-height:24px; margin-bottom:12px; font-size:16px; font-weight:bold;"></div>
 
@@ -1989,7 +2015,7 @@ function renderCard(e) {
 
     }
 
-    if(activeMode !== 'recite') setTimeout(() => { const inp = document.getElementById('qw-input'); if(inp) inp.focus(); }, 50);
+    if(activeMode !== 'recite') setTimeout(() => { const inputs = getDictInputs(); if (inputs[0]) inputs[0].focus(); }, 50);
 
 }
 
@@ -2299,21 +2325,45 @@ function useHint() {
 
     currentQuizEntry._hintUsed = true;
 
-    var hint = generateHint(currentQuizEntry.en);
-
-    var inp = document.getElementById('qw-input');
-
     var fb = document.getElementById('qw-feedback');
 
-    inp.placeholder = hint;
+    var inputs = getDictInputs();
 
-    inp.value = '';
+    var boxMode = !!document.getElementById('qw-boxes');
 
-    inp.classList.add('hint-mode');
+    if (boxMode) {
 
-    fb.innerHTML = '<span style="color:#E65100;">💡 提示：' + hint + '</span>';
+        var tws = (currentQuizEntry.en || '').split(/\s+/);
 
-    inp.focus();
+        inputs.forEach(function(x, i) {
+
+            x.value = '';
+
+            x.placeholder = tws[i] ? generateHint(tws[i]) : '';
+
+            x.classList.add('hint-mode');
+
+        });
+
+        fb.innerHTML = '<span style="color:#E65100;">💡 提示：每框显示对应单词</span>';
+
+        if (inputs[0]) inputs[0].focus();
+
+    } else {
+
+        var hint = generateHint(currentQuizEntry.en);
+
+        inputs[0].placeholder = hint;
+
+        inputs[0].value = '';
+
+        inputs[0].classList.add('hint-mode');
+
+        fb.innerHTML = '<span style="color:#E65100;">💡 提示：' + hint + '</span>';
+
+        inputs[0].focus();
+
+    }
 
 }
 
@@ -2473,19 +2523,53 @@ var delayBatchSize = 10;
 
 
 
+function buildWordBoxes(wordEn) {
+    var tws = String(wordEn || '').split(/\s+/).filter(Boolean);
+    if (tws.length <= 1) {
+        return '<input type="text" id="qw-input" class="dict-input" placeholder="拼写英文单词..." autocomplete="off" onkeypress="if(event.key==\'Enter\') checkDictAnswer()">';
+    }
+    var h = '<div id="qw-boxes" class="qw-boxes">';
+    for (var i = 0; i < tws.length; i++) {
+        var w = tws[i];
+        var wd = Math.max(36, Math.min(220, w.length * 17 + 22));
+        h += '<input type="text" class="qw-box" data-wi="' + i + '" style="width:' + wd + 'px" maxlength="' + (w.length + 8) + '" autocomplete="off" spellcheck="false" autocapitalize="off">';
+    }
+    h += '</div>';
+    return h;
+}
+function collectBoxAnswer() {
+    var boxes = document.querySelectorAll('#qw-boxes .qw-box');
+    if (!boxes || !boxes.length) return '';
+    var vals = [];
+    for (var i = 0; i < boxes.length; i++) vals.push(boxes[i].value.trim());
+    return vals.join(' ');
+}
+function getDictInputs() {
+    var boxes = document.getElementById('qw-boxes');
+    if (boxes) {
+        var b = boxes.querySelectorAll('.qw-box');
+        if (b && b.length) return Array.prototype.slice.call(b);
+    }
+    var inp = document.getElementById('qw-input');
+    return inp ? [inp] : [];
+}
+
 function checkDictAnswer() {
 
     var inp = document.getElementById('qw-input');
-
-    
+    var _boxMode = !!(document.getElementById('qw-boxes') && !delayMode);
+    function _inputs() { return _boxMode ? getDictInputs() : [inp]; }
+    function _clearAll() { _inputs().forEach(function(x){ x.value = ''; x.placeholder = ''; }); }
+    function _style(c) { _inputs().forEach(function(x){ x.style.borderColor = c; x.style.color = c; }); }
+    function _disable() { _inputs().forEach(function(x){ x.disabled = true; }); }
+    function _focusFirst() { var xs = _inputs(); if (xs[0]) xs[0].focus(); }
+    function _shake() { _inputs().forEach(function(x){ x.classList.add('shake'); setTimeout(function(){ x.classList.remove('shake'); }, 300); }); }
 
     // === 级联复习模式（答完后逐张查看卡片）===
 
     if (_dictCascadeReview) {
 
         if (advanceCascade()) {
-
-            // 全部卡片看完 → 下一个词
 
             _dictCascadeReview = false;
 
@@ -2494,8 +2578,6 @@ function checkDictAnswer() {
             showWord();
 
         } else {
-
-            // 还有卡片 → 更新按钮文案
 
             var btn = document.querySelector('#quiz-area .btn-action');
 
@@ -2517,9 +2599,9 @@ function checkDictAnswer() {
 
     if(answered) return;
 
-    if(!inp || inp.value.trim() === '') return;
+    var userAns = _boxMode ? collectBoxAnswer() : ((inp && inp.value.trim().toLowerCase()) || '');
 
-    var userAns = inp.value.trim().toLowerCase();
+    if(!userAns) return;
 
     var target = currentQuizEntry.en.toLowerCase();
 
@@ -2581,15 +2663,13 @@ function checkDictAnswer() {
 
     if (_normAns(userAns) === _normAns(target)) {
 
-        // 正确 → 升盒（除非用了提示）
-
         score++;
 
         var hinted = currentQuizEntry._hintUsed;
 
         if (currentQuizEntry._box && !hinted) upgradeBox(target);
 
-        inp.style.borderColor = '#34A853'; inp.style.color = '#34A853';
+        _style('#34A853');
 
         fb.innerHTML = '<span style="color:#34A853;">✅ 正确！' + (hinted ? '（提示后答对，不升盒）' : '（Box' + (currentQuizEntry._box || '?') + '→升盒）') + '</span>';
 
@@ -2597,11 +2677,11 @@ function checkDictAnswer() {
 
         answered = true;
 
+        _disable();
+
         setTimeout(() => { idx++; showWord(); }, 800);
 
     } else {
-
-        // 3击缓冲
 
         if (!currentQuizEntry._strikes) currentQuizEntry._strikes = 0;
 
@@ -2613,43 +2693,55 @@ function checkDictAnswer() {
 
         if (s < 3) {
 
-            // 前两次：清空重试
-
-            inp.style.borderColor = '#EA4335';
+            _style('#EA4335');
 
             fb.innerHTML = '<span style="color:#EA4335;">❌ 再试一次（' + s + '/3）</span>';
 
             playErrorBeep();
 
-            inp.classList.add('shake');
+            _shake();
 
-            setTimeout(() => { inp.classList.remove('shake'); inp.style.borderColor = '#E3E8EE'; inp.value = ''; inp.focus(); }, 300);
+            setTimeout(() => { _style('#E3E8EE'); _clearAll(); _focusFirst(); }, 300);
 
         } else {
 
-            // 第3次：给提示
+            _clearAll();
 
-            var hint = generateHint(target);
+            if (_boxMode) {
 
-            inp.value = '';
+                var tws = target.split(/\s+/);
 
-            inp.placeholder = hint;
+                _inputs().forEach(function(x, i) {
 
-            inp.classList.add('hint-mode');
+                    x.placeholder = tws[i] ? generateHint(tws[i]) : '';
 
-            fb.innerHTML = '<span style="color:#E65100;">💡 提示：' + hint + '（最后机会）</span>';
+                    x.classList.add('hint-mode');
 
-            inp.style.borderColor = '#E65100';
+                });
 
-            inp.focus();
+                fb.innerHTML = '<span style="color:#E65100;">💡 提示：每框显示对应单词（最后机会）</span>';
+
+            } else {
+
+                var hint = generateHint(target);
+
+                inp.placeholder = hint;
+
+                inp.classList.add('hint-mode');
+
+                fb.innerHTML = '<span style="color:#E65100;">💡 提示：' + hint + '（最后机会）</span>';
+
+            }
+
+            _style('#E65100');
+
+            _focusFirst();
 
         }
 
         
 
         if (s > 3) {
-
-            // 提示后还是错 → 降盒
 
             saveError(currentQuizEntry.cn, currentQuizEntry.en);
 
@@ -2661,9 +2753,9 @@ function checkDictAnswer() {
 
             answered = true;
 
-            inp.disabled = true;
+            _disable();
 
-            inp.style.color = '#D93025';
+            _style('#D93025');
 
             setTimeout(() => { idx++; showWord(); }, 1500);
 
@@ -2674,6 +2766,41 @@ function checkDictAnswer() {
     updateReviewStrikes();
 
 }
+
+// === 分框键盘委托：Enter 提交 / 空格跳下一框 / 退格空框回上一框 ===
+
+document.addEventListener('keydown', function(ev) {
+
+    var box = ev.target;
+
+    if (!box || !box.classList || !box.classList.contains('qw-box')) return;
+
+    var wi = parseInt(box.dataset.wi, 10);
+
+    var boxes = document.querySelectorAll('#qw-boxes .qw-box');
+
+    if (ev.key === 'Enter') { ev.preventDefault(); checkDictAnswer(); return; }
+
+    if (ev.key === ' ') {
+
+        ev.preventDefault();
+
+        var next = boxes[wi + 1];
+
+        if (next) next.focus();
+
+        else checkDictAnswer();
+
+    } else if (ev.key === 'Backspace' && box.value === '' && wi > 0) {
+
+        var prev = boxes[wi - 1];
+
+        if (prev) { prev.focus(); prev.value = prev.value.slice(0, -1); }
+
+    }
+
+});
+
 
 
 
