@@ -541,6 +541,22 @@
             font-weight: bold; cursor: pointer; transition: 0.2s; flex-shrink: 0;
         }
         .notes-col .notes-input-bar .btn-action:hover { background: #0848B0; }
+
+        /* 错词复习·看词阶段：输入栏换成「下一个 ▶」（2026-09-23） */
+
+        .notes-col .notes-input-bar.preview { justify-content: center; gap: 16px; }
+
+        .notes-col .notes-input-bar .notes-preview-tip {
+
+            font-size: 13px; color: #8A94A6; font-family: var(--font-cn, "Noto Serif SC", serif);
+
+        }
+
+        .notes-col .notes-input-bar.preview .btn-action {
+
+            width: auto; min-width: 150px; padding: 12px 26px; font-size: 16px;
+
+        }
         .notes-col .notes-input-bar .dict-input:disabled {
             background: #F1F5F9; color: #34A853; border-color: #34A853;
         }
@@ -1747,7 +1763,10 @@ function printSheet() {
 function backToMenu() {
 
     closeReciteFullscreen();
+
     stopReciteAudioLoop();
+
+    if (errorReviewMode) exitErrorReview();  // 中途返回 = 本轮作废（不动错题本条目）
 
     document.querySelectorAll('.card-area').forEach(el => el.style.display = 'none');
 
@@ -1809,9 +1828,14 @@ function showWord() {
     if (idx >= words.length) { 
 
         closeReciteFullscreen();
+
         stopReciteAudioLoop();
 
+        if (errorReviewPhase === 'preview') { startErrorReviewDictation(); return; } // 看词看完 → 默写
+
         if (delayMode) { finishDelayReview(); return; }
+
+        if (errorReviewMode) { finishQuiz(); return; }                              // 错词默写：直接出成绩，不接单元短文
 
         var unitIdx = parseInt(document.getElementById('unit-select').value);
 
@@ -1847,7 +1871,7 @@ function renderCard(e) {
 
     body.innerHTML = ''; 
 
-    document.getElementById('progress-text').textContent = (errorReviewMode ? '📓 错词复习 ' : '') + `${idx + 1} / ${words.length}`;
+    document.getElementById('progress-text').textContent = (errorReviewMode ? (errorReviewPhase === 'preview' ? '📓 错词复习 ' : '📓 错词默写 ') : '') + `${idx + 1} / ${words.length}`;
 
     document.getElementById('progress-fill').style.width = `${(idx / words.length) * 100}%`;
 
@@ -2038,8 +2062,13 @@ function closeReciteFullscreen() {
 
 // 中途退出背读：关全屏 + 回菜单（quiz-area 内 card-body 为空，不能直接回 quiz-area）
 function exitReciteFullscreen() {
+
     closeReciteFullscreen();
+
+    if (errorReviewMode) exitErrorReview();  // 看词阶段退出 = 本轮作废（不动错题本条目）
+
     backToMenu();
+
 }
 
 // Esc 退出全屏；→ 下一个词；← 上一个词（Enter 在输入框聚焦时提交判分，不切词）
@@ -2047,27 +2076,52 @@ document.addEventListener('keydown', function (ev) {
     if (!_cornellOpen) return;
     if (ev.key === 'Escape') { exitReciteFullscreen(); return; }
     var inInput = (ev.target && ev.target.id === 'qw-input');
+
     if (ev.key === 'Enter') {
+
         if (inInput) return; // 输入框的 onkeypress 处理提交
+
         ev.preventDefault(); // 输入框外空回车不再切词（2026-09-03 bug：判对换词后焦点丢失，Enter 落到 body 误跳词）
+
+        if (_cornellPreview) cornellPreviewNext(); // 看词阶段：回车 = 下一个（2026-09-23）
+
         return;
+
     }
+
     if (ev.key === 'ArrowRight' && !inInput) {
+
         ev.preventDefault();
+
+        if (_cornellPreview) { cornellPreviewNext(); return; }
+
         stopReciteAudioLoop();
+
         idx++;
+
         showWord();
+
         return;
+
     }
+
     if (ev.key === 'ArrowLeft' && !inInput) {
+
         ev.preventDefault();
+
+        if (_cornellPreview) { cornellPreviewPrev(); return; }
+
         stopReciteAudioLoop();
+
         if (idx > 0) { idx--; showWord(); }
+
     }
 });
 
 // 康奈尔双栏渲染：左线索Cue(30%) + 右笔记Notes(70%)，无顶部大标题、无输入区
 // 交互：左栏=折叠导航（组标题→词条），点击词条→右栏例句区替换为该词条例句/释义
+var _cornellPreview = false;   // 错词复习「先看词」阶段：无输入栏，改「下一个 ▶」（2026-09-23）
+
 var _cornellTargets = null;    // 当前词的左栏可点击目标 { type: [{label, html}] }
 var _cornellDefaultEx = '';    // 当前词默认例句 HTML（用于返回）
 var _cornellPhraseMap = {};    // type 索引 → 词条数据
@@ -2275,16 +2329,26 @@ function renderCornellCard(body, cascadeCards, info) {
                 '</div>' +
                 (formsHtml ? '<div class="cornell-note-label">🧩 拓展</div>' + formsHtml : '') +
             '</div>' +
-            '<div class="notes-input-bar">' +
-                '<span class="notes-replay" onclick="event.preventDefault();speakWord(\'' + wordEn.replace(/'/g, "\\'") + '\')" title="重听发音">🔊</span>' +
-                '<input type="text" id="qw-input" class="dict-input" placeholder="输入这个单词..." autocomplete="off" onkeypress="if(event.key === \'Enter\') checkCornellAnswer()">' +
-                '<button class="btn-action" onclick="checkCornellAnswer()">确认</button>' +
+            '<div class="notes-input-bar' + (_cornellPreview ? ' preview' : '') + '">' +
+
+                (_cornellPreview
+
+                    ? '<span class="notes-preview-tip">看一遍 · 记住它 · 待会儿默写</span>' +
+
+                      '<button class="btn-action" onclick="cornellPreviewNext()">' + (idx >= words.length - 1 ? '开始默写 ▶' : '下一个 ▶') + '</button>'
+
+                    : '<span class="notes-replay" onclick="event.preventDefault();speakWord(\'' + wordEn.replace(/'/g, "\\'") + '\')" title="重听发音">🔊</span>' +
+
+                      '<input type="text" id="qw-input" class="dict-input" placeholder="输入这个单词..." autocomplete="off" onkeypress="if(event.key === \'Enter\') checkCornellAnswer()">' +
+
+                      '<button class="btn-action" onclick="checkCornellAnswer()">确认</button>') +
+
             '</div>' +
         '</div>';
 
     // 进度
-    document.getElementById('cornell-progress').textContent = (idx + 1) + ' / ' + words.length;
-    document.getElementById('progress-text').textContent = (idx + 1) + ' / ' + words.length;
+    document.getElementById('cornell-progress').textContent = (_cornellPreview ? '📓 复习 ' : '') + (idx + 1) + ' / ' + words.length;
+    document.getElementById('progress-text').textContent = (_cornellPreview ? '📓 错词复习 ' : '') + (idx + 1) + ' / ' + words.length;
     document.getElementById('progress-fill').style.width = ((idx / words.length) * 100) + '%';
 
     // 防偷看: 输入框聚焦 → 遮单词行; 失焦 → 恢复 (2026-09-02恢复)
@@ -3027,7 +3091,7 @@ function finishQuiz() {
 
     var wasErrReview = errorReviewMode;
 
-    errorReviewMode = false;
+    exitErrorReview();
 
     document.getElementById('quiz-area').style.display = 'none'; 
 
@@ -3551,6 +3615,12 @@ function clearSubjectErrors() { var activeSubj = document.querySelector('.subj-t
 
 var errorReviewMode = false;
 
+var errorReviewPhase = '';       // '' | 'preview'(看词) | 'dictation'(默写)
+
+var ERROR_REVIEW_BATCH = 20;     // 错词复习每轮随机抽取的词数（2026-09-23 用户口径）
+
+function exitErrorReview() { errorReviewMode = false; errorReviewPhase = ''; _cornellPreview = false; }
+
 function _fmtErrTime(iso) {
     try {
         var d = new Date(iso);
@@ -3560,22 +3630,106 @@ function _fmtErrTime(iso) {
     } catch(e) { return iso; }
 }
 
-// 复习错词：错题本所有错词重新默写，规则同默写板块；每对一次 count-1，减到 0 移出错题本
+// 复习错词：每轮随机抽 ERROR_REVIEW_BATCH 个错词 → 先「看词」（康奈尔全屏，同背读页）→ 再默写
+
+// 默写规则同默写板块；每对一次 count-1，减到 0 移出错题本
+
 function startErrorReview() {
+
     var err = getErrors();
+
     var activeSubj = document.querySelector('.subj-tab.active').id.replace('err-tab-', '');
+
     var items = [];
+
     for (var k in err) { if ((err[k].subj || 'eng') === activeSubj) items.push(err[k]); }
+
     if (!items.length) { alert('当前学科暂无错词 🎉'); return; }
+
+
+
+    // 随机抽取本轮词（Fisher-Yates；不足 20 则全部）
+
+    for (var si = items.length - 1; si > 0; si--) {
+
+        var sj = Math.floor(Math.random() * (si + 1));
+
+        var st = items[si]; items[si] = items[sj]; items[sj] = st;
+
+    }
+
+    var batch = items.slice(0, ERROR_REVIEW_BATCH);
+
+
+
     errorReviewMode = true;
-    words = items.map(function(it) { return { en: it.en, cn: it.cn, type: 'word' }; });
-    words.sort(function() { return Math.random() - 0.5; });
+
+    errorReviewPhase = 'preview';   // 阶段一：看词
+
+    _cornellPreview = true;
+
+    delayMode = false;              // 防御：确保默写阶段走 3 击缓冲（不进每日复习分支）
+
+    words = batch.map(function(it) { return { en: it.en, cn: it.cn, type: 'word' }; });
+
     idx = 0; score = 0; answered = false; reciteStreak = 0;
-    activeMode = 'dictation';
+
+    activeMode = 'recite';          // 复用康奈尔全屏页面
+
     document.querySelectorAll('.card-area').forEach(function(el) { el.style.display = 'none'; });
+
     document.getElementById('quiz-area').style.display = 'block';
-    document.getElementById('progress-text').textContent = '📓 错词复习';
+
     showWord();
+
+}
+
+
+
+// 阶段一 → 阶段二：看完词，进入默写（同一批词、同一顺序）
+
+function startErrorReviewDictation() {
+
+    errorReviewPhase = 'dictation';
+
+    _cornellPreview = false;
+
+    activeMode = 'dictation';
+
+    closeReciteFullscreen();
+
+    stopReciteAudioLoop();
+
+    idx = 0; score = 0; answered = false; reciteStreak = 0;
+
+    document.querySelectorAll('.card-area').forEach(function(el) { el.style.display = 'none'; });
+
+    document.getElementById('quiz-area').style.display = 'block';
+
+    showWord();
+
+}
+
+
+
+// 看词阶段：下一个（最后一个 → 开始默写） / 上一个
+
+function cornellPreviewNext() {
+
+    stopReciteAudioLoop();
+
+    if (idx >= words.length - 1) { startErrorReviewDictation(); return; }
+
+    idx++; showWord();
+
+}
+
+function cornellPreviewPrev() {
+
+    stopReciteAudioLoop();
+
+    if (idx > 0) { idx--; showWord(); }
+
 }
 
 // 错词复习模式下：答对 → count-1，减到 0 从错题本移除（答错由 saveError 的 count++ 处理）
